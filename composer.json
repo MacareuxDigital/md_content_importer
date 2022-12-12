@@ -1,0 +1,12 @@
+{
+    "require": {
+        "symfony/dom-crawler": "^5.4",
+        "symfony/css-selector": "^5.4"
+    },
+    "replace": {
+        "symfony/deprecation-contracts": "^2.1",
+        "symfony/polyfill-ctype": "~1.8",
+        "symfony/polyfill-mbstring": "~1.0",
+        "symfony/polyfill-php80": "^1.16"
+    }
+}
