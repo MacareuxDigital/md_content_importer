@@ -14,6 +14,8 @@ class TransformerServiceProvider extends ServiceProvider
         $this->app->singleton(TransformerManager::class, function ($app) {
             $manager = new TransformerManager();
             $manager->registerTransformer(new ReplaceTransformer());
+            $manager->registerTransformer(new TopicsAttributeTransformer());
+            $manager->registerTransformer(new ImageFileAttributeTransformer());
 
             return $manager;
         });

@@ -11,6 +11,8 @@ interface TransformerInterface
 
     public function getTransformerHandle(): string;
 
+    public function supportPreview(): bool;
+
     public function transform(string $input): string;
 
     public function renderForm(): void;

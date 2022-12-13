@@ -11,44 +11,61 @@ defined('C5_EXECUTE') or die('Access Denied.');
 /** @var View $view */
 /** @var Token $token */
 /** @var Form $form */
-/** @var \Macareux\ContentImporter\Entity\Batch $batch */
+/** @var BatchItem $batchItem */
 /** @var \Concrete\Core\Page\Type\Composer\FormLayoutSetControl $formLayoutSetControl */
+$filter = '';
+if ($batchItem->getFilterType() !== BatchItem::TYPE_FILENAME) {
+    $filter = $batchItem->getSelector();
+}
 ?>
 <form method="post" action="<?= $view->action('submit_batch_item') ?>" id="batch-item-form">
     <?php $token->output('submit_batch_item') ?>
-    <?= $form->hidden('batch', $batch->getId()) ?>
+    <?= $form->hidden('batch', $batchItem->getBatch()->getId()) ?>
+    <?= $form->hidden('batchItem', $batchItem->getId()) ?>
     <?= $form->hidden('formLayoutSetControl', $formLayoutSetControl->getPageTypeComposerFormLayoutSetControlID()) ?>
     <div class="form-group">
         <?= $form->label('filter', t('DOM Filter')) ?>
         <div class="form-check">
-            <?= $form->radio('filterType', BatchItem::TYPE_XPATH, true) ?>
+            <?= $form->radio('filterType', BatchItem::TYPE_XPATH, $batchItem->getFilterType() === BatchItem::TYPE_XPATH) ?>
             <?= $form->label('filterType1', t('Xpath')) ?>
         </div>
         <div class="form-check">
-            <?= $form->radio('filterType', BatchItem::TYPE_SELECTOR) ?>
+            <?= $form->radio('filterType', BatchItem::TYPE_SELECTOR, $batchItem->getFilterType() === BatchItem::TYPE_SELECTOR) ?>
             <?= $form->label('filterType2', t('CSS Selector')) ?>
         </div>
         <div class="form-check">
-            <?= $form->radio('filterType', BatchItem::TYPE_FILENAME) ?>
+            <?= $form->radio('filterType', BatchItem::TYPE_FILENAME, $batchItem->getFilterType() === BatchItem::TYPE_FILENAME) ?>
             <?= $form->label('filterType3', t('File Name')) ?>
         </div>
-        <?= $form->text('filter') ?>
+        <?php
+        $options = [];
+        if ($batchItem->getFilterType() === BatchItem::TYPE_FILENAME) {
+            $options['style'] = 'display: none';
+        }
+        echo $form->text('filter', $filter, $options);
+        ?>
     </div>
     <div class="form-group" id="content-type-section">
         <?= $form->label('content', t('Content Type')) ?>
         <div class="form-check">
-            <?= $form->radio('contentType', BatchItem::CONTENT_HTML, true) ?>
+            <?= $form->radio('contentType', BatchItem::CONTENT_HTML, $batchItem->getContentType() === BatchItem::CONTENT_HTML) ?>
             <?= $form->label('contentType4', t('Inner HTML')) ?>
         </div>
         <div class="form-check">
-            <?= $form->radio('contentType', BatchItem::CONTENT_TEXT) ?>
+            <?= $form->radio('contentType', BatchItem::CONTENT_TEXT, $batchItem->getContentType() === BatchItem::CONTENT_TEXT) ?>
             <?= $form->label('contentType5', t('Inner Text')) ?>
         </div>
         <div class="form-check">
-            <?= $form->radio('contentType', BatchItem::CONTENT_ATTRIBUTE) ?>
+            <?= $form->radio('contentType', BatchItem::CONTENT_ATTRIBUTE, $batchItem->getContentType() === BatchItem::CONTENT_ATTRIBUTE) ?>
             <?= $form->label('contentType6', t('Attribute')) ?>
         </div>
-        <?= $form->text('attribute', ['style' => 'display: none']) ?>
+        <?php
+        $options = [];
+        if ($batchItem->getContentType() !== BatchItem::CONTENT_ATTRIBUTE) {
+            $options['style'] = 'display: none';
+        }
+        echo $form->text('attribute', $batchItem->getAttribute(), $options);
+        ?>
     </div>
     <div class="form-group">
         <div id="preview-alert" class="alert alert-warning" role="alert" style="display: none"></div>
@@ -57,9 +74,9 @@ defined('C5_EXECUTE') or die('Access Denied.');
     </div>
     <div class="ccm-dashboard-form-actions-wrapper">
         <div class="ccm-dashboard-form-actions">
-            <a href="<?= UrlFacade::to('/dashboard/system/content_importer/batches/edit_batch', $batch->getId()) ?>"
+            <a href="<?= UrlFacade::to('/dashboard/system/content_importer/batches/edit_batch', $batchItem->getBatch()->getId()) ?>"
                class="btn btn-secondary float-start"><?= t('Cancel') ?></a>
-            <?= $form->submit('save', t('Add Selector'), ['class' => 'btn btn-primary float-end ms-2']) ?>
+            <?= $form->submit('save', t('Save Selector'), ['class' => 'btn btn-primary float-end ms-2']) ?>
             <?= $form->button('preview', t('Preview'), ['class' => 'btn btn-secondary float-end']) ?>
         </div>
     </div>

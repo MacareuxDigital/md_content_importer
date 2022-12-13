@@ -7,6 +7,9 @@ use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application;
 
+/**
+ * Transformer uses str_replace
+ */
 class ReplaceTransformer implements TransformerInterface
 {
     private $search;
@@ -52,6 +55,11 @@ class ReplaceTransformer implements TransformerInterface
     public function getTransformerHandle(): string
     {
         return 'replace';
+    }
+
+    public function supportPreview(): bool
+    {
+        return true;
     }
 
     public function transform(string $input): string

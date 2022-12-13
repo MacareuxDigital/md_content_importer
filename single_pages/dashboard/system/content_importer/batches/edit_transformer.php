@@ -82,7 +82,7 @@ if ($batchItemTransformer) {
             <div class="mb-3 row">
                 <?= $form->label('preview-result', t('Preview Result'), ['class' => 'col-sm-2']) ?>
                 <div class="col-sm-10">
-                    <?= $form->textarea('preview-result', ['rows' => 5, 'readonly' => true]) ?>
+                    <?= $form->textarea('preview-result', ['rows' => 5, 'disabled' => true]) ?>
                 </div>
             </div>
         </div>

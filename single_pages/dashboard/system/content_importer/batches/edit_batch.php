@@ -1,5 +1,6 @@
 <?php
 
+use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\PublishTargetCorePageProperty;
 use Concrete\Core\Page\Type\Composer\FormLayoutSet;
 use Concrete\Core\Page\Type\Composer\FormLayoutSetControl;
 use Concrete\Core\Page\Type\Type;
@@ -26,6 +27,9 @@ foreach ($formLayoutSets as $formLayoutSet) {
         <?php
         /** @var FormLayoutSetControl $formLayoutSetControl */
         foreach ($formLayoutSetControls as $formLayoutSetControl) {
+            if ($formLayoutSetControl->getPageTypeComposerControlObject() instanceof PublishTargetCorePageProperty) {
+                continue;
+            }
             $formLayoutSetControlID = $formLayoutSetControl->getPageTypeComposerFormLayoutSetControlID();
             ?>
             <div class="card mb-3">
@@ -36,18 +40,40 @@ foreach ($formLayoutSets as $formLayoutSet) {
                     <?php
                     if (isset($batchItems[$formLayoutSetControlID])) {
                         $batchItem = $batchItems[$formLayoutSetControlID];
+                        $selector = $batchItem->getSelector();
+                        $contentType = t('HTML');
+                        if ($batchItem->getContentType() === BatchItem::CONTENT_TEXT) {
+                            $contentType = t('Text');
+                        }
+                        if ($batchItem->getContentType() === BatchItem::CONTENT_ATTRIBUTE) {
+                            $contentType = t('%s attribute', $batchItem->getAttribute());
+                        }
                         ?>
-                        <h5>
-                            <?= h($batchItem->getXpath()) ?>
-                            <?= h($batchItem->getSelector()) ?>
-                        </h5>
+                        <div class="alert alert-info">
+                            <?php
+                            if ($batchItem->getFilterType() === BatchItem::TYPE_XPATH) {
+                                echo t('Get %s from XPath: %s', $contentType, $selector);
+                            }
+                            if ($batchItem->getFilterType() === BatchItem::TYPE_SELECTOR) {
+                                echo t('Get %s from selector: %s', $contentType, $selector);
+                            }
+                            if ($batchItem->getFilterType() === BatchItem::TYPE_FILENAME) {
+                                echo t('Get filename');
+                            }
+                            ?>
+                            <div class="btn-group float-end" role="group" aria-label="<?= t('Selector Actions') ?>">
+                                <a href="<?= $view->action('edit_batch_item', $batchItem->getId()) ?>" class="btn btn-light btn-sm"><?= t('Edit Selector') ?></a>
+                            </div>
+                        </div>
                         <?php
                         $transformers = $batchItem->getBatchItemTransformers();
-                        if ($transformers) {
+                        if ($transformers->count() > 0) {
                             ?>
+                            <h6><?= t('Transformers') ?></h6>
                             <div class="list-group mb-4">
                                 <?php foreach ($transformers as $transformer) { ?>
-                                    <a class="list-group-item" href="<?= $view->action('edit_transformer', $transformer->getId()) ?>"><?= h($transformer->getClass()->getTransformerName()) ?></a>
+                                    <a class="list-group-item"
+                                       href="<?= $view->action('edit_transformer', $transformer->getId()) ?>"><?= h($transformer->getClass()->getTransformerName()) ?></a>
                                 <?php } ?>
                             </div>
                             <?php

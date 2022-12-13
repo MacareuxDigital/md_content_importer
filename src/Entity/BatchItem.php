@@ -13,6 +13,13 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class BatchItem
 {
+    public const TYPE_XPATH = 1;
+    public const TYPE_SELECTOR = 2;
+    public const TYPE_FILENAME = 3;
+    public const CONTENT_HTML = 10;
+    public const CONTENT_TEXT = 20;
+    public const CONTENT_ATTRIBUTE = 30;
+
     /**
      * @var int|null
      * @ORM\Id
@@ -31,13 +38,25 @@ class BatchItem
      * @var string
      * @ORM\Column(type="string", nullable=true)
      */
-    private $xpath;
+    private $selector;
+
+    /**
+     * @var int
+     * @ORM\Column(type="smallint")
+     */
+    private $filterType = self::TYPE_XPATH;
+
+    /**
+     * @var int
+     * @ORM\Column(type="smallint")
+     */
+    private $contentType = self::CONTENT_HTML;
 
     /**
      * @var string
      * @ORM\Column(type="string", nullable=true)
      */
-    private $selector;
+    private $attribute;
 
     /**
      * @var Batch
@@ -92,22 +111,6 @@ class BatchItem
     /**
      * @return string|null
      */
-    public function getXpath(): ?string
-    {
-        return $this->xpath;
-    }
-
-    /**
-     * @param string $xpath
-     */
-    public function setXpath(string $xpath): void
-    {
-        $this->xpath = $xpath;
-    }
-
-    /**
-     * @return string|null
-     */
     public function getSelector(): ?string
     {
         return $this->selector;
@@ -119,6 +122,54 @@ class BatchItem
     public function setSelector(string $selector): void
     {
         $this->selector = $selector;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFilterType(): int
+    {
+        return $this->filterType;
+    }
+
+    /**
+     * @param int $filterType
+     */
+    public function setFilterType(int $filterType): void
+    {
+        $this->filterType = $filterType;
+    }
+
+    /**
+     * @return int
+     */
+    public function getContentType(): int
+    {
+        return $this->contentType;
+    }
+
+    /**
+     * @param int $contentType
+     */
+    public function setContentType(int $contentType): void
+    {
+        $this->contentType = $contentType;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAttribute(): ?string
+    {
+        return $this->attribute;
+    }
+
+    /**
+     * @param string $attribute
+     */
+    public function setAttribute(string $attribute): void
+    {
+        $this->attribute = $attribute;
     }
 
     /**

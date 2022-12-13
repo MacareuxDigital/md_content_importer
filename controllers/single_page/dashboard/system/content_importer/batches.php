@@ -159,8 +159,29 @@ class Batches extends DashboardPageController
         if ($batch && $formLayoutSetControl) {
             $this->set('batch', $batch);
             $this->set('formLayoutSetControl', $formLayoutSetControl);
-            $this->set('pageTitle', t('Set Selector'));
+            $this->set('pageTitle', t('Set Selector for %s', $formLayoutSetControl->getPageTypeComposerControlDisplayLabel()));
             $this->render('/dashboard/system/content_importer/batches/add_batch_item');
+        } else {
+            $this->error->add(t('Invalid Parameter.'));
+            $this->view();
+        }
+    }
+
+    public function edit_batch_item($batchItemID)
+    {
+        /** @var BatchItem|null $batchItem */
+        $batchItem = $this->getEntry(BatchItem::class, $batchItemID);
+        if ($batchItem) {
+            $formLayoutSetControl = $batchItem->getPtComposerFormLayoutSetControl();
+            if ($formLayoutSetControl) {
+                $this->set('batchItem', $batchItem);
+                $this->set('formLayoutSetControl', $formLayoutSetControl);
+                $this->set('pageTitle', t('Edit Selector for %s', $formLayoutSetControl->getPageTypeComposerControlDisplayLabel()));
+                $this->render('/dashboard/system/content_importer/batches/edit_batch_item');
+            } else {
+                $this->error->add(t('Composer Form Control not found.'));
+                $this->view();
+            }
         } else {
             $this->error->add(t('Invalid Parameter.'));
             $this->view();
@@ -179,17 +200,10 @@ class Batches extends DashboardPageController
                 $sourcePath = $batch->getSourcePathArray()[0];
                 /** @var Crawler $crawler */
                 $crawler = $this->app->make(Crawler::class, ['sourcePath' => $sourcePath]);
-                $filterType = $this->get('filterType');
+                $filterType = (int) $this->get('filterType');
+                $contentType = (int) $this->get('contentType');
                 try {
-                    switch ($filterType) {
-                        case "xpath":
-                            $html = $crawler->getByXPath($this->get('filter'));
-                            break;
-                        case "selector":
-                        default:
-                            $html = $crawler->getBySelector($this->get('filter'));
-                            break;
-                    }
+                    $html = $crawler->getContent($filterType, $contentType, $this->get('filter'), $this->get('attribute'));
                     if ($html) {
                         $response->setResponse($html);
                     } else {
@@ -218,14 +232,25 @@ class Batches extends DashboardPageController
             $formLayoutSetControlID = $this->post('formLayoutSetControl');
             $filterType = $this->post('filterType');
             $filter = $this->post('filter');
+            $contentType = $this->post('contentType');
+            $attribute = $this->post('attribute');
 
             $batchItem = new BatchItem();
-            if ($filterType === 'xpath') {
-                $batchItem->setXpath($filter);
-                $batchItem->setSelector('');
-            } else {
-                $batchItem->setXpath('');
+            $batchItemID = $this->post('batchItem');
+            if ($batchItemID) {
+                $batchItem = $this->getEntry(BatchItem::class, $batchItemID);
+            }
+            if ($filterType) {
+                $batchItem->setFilterType((int) $filterType);
+            }
+            if ($filter) {
                 $batchItem->setSelector($filter);
+            }
+            if ($contentType) {
+                $batchItem->setContentType((int) $contentType);
+            }
+            if ($attribute) {
+                $batchItem->setAttribute($attribute);
             }
             $batchItem->setPtComposerFormLayoutSetControlID($formLayoutSetControlID);
             $batchItem->setBatch($batch);
@@ -428,13 +453,7 @@ class Batches extends DashboardPageController
         $sourcePath = $batch->getSourcePathArray()[0];
         /** @var Crawler $crawler */
         $crawler = $this->app->make(Crawler::class, ['sourcePath' => $sourcePath]);
-        if ($batchItem->getXpath()) {
-            $html = $crawler->getByXPath($batchItem->getXpath());
-        }
-        if ($batchItem->getSelector()) {
-            $html = $crawler->getBySelector($batchItem->getSelector());
-        }
 
-        return $html;
+        return $crawler->getContent($batchItem->getFilterType(), $batchItem->getContentType(), $batchItem->getSelector(), $batchItem->getAttribute());
     }
 }
