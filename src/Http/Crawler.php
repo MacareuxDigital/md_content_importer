@@ -2,6 +2,7 @@
 
 namespace Macareux\ContentImporter\Http;
 
+use Concrete\Core\Cache\Level\ExpensiveCache;
 use Concrete\Core\File\Service\File;
 use Macareux\ContentImporter\Entity\BatchItem;
 use Symfony\Component\CssSelector\Exception\SyntaxErrorException;
@@ -20,13 +21,19 @@ class Crawler
     protected $service;
 
     /**
+     * @var ExpensiveCache
+     */
+    protected $cache;
+
+    /**
      * @param string $sourcePath
      * @param File $service
      */
-    public function __construct(string $sourcePath, File $service)
+    public function __construct(string $sourcePath, File $service, ExpensiveCache $cache)
     {
         $this->sourcePath = $sourcePath;
         $this->service = $service;
+        $this->cache = $cache;
     }
 
     public function getContent(int $filterType, int $contentType, string $selector, string $attribute = null): string
@@ -135,15 +142,35 @@ class Crawler
 
     protected function getCrawlerByXPath(string $xpath)
     {
-        $contents = $this->service->getContents($this->sourcePath);
+        $contents = $this->getSource();
 
         return (new SymfonyCrawler($contents))->filterXPath($xpath);
     }
 
     protected function getCrawlerBySelector(string $selector)
     {
-        $contents = $this->service->getContents($this->sourcePath);
+        $contents = $this->getSource();
 
         return (new SymfonyCrawler($contents))->filter($selector);
+    }
+
+    protected function getSource()
+    {
+        if ($this->cache->isEnabled()) {
+            $item = $this->cache->getItem('/content_importer/source' . str_replace(['https:/', 'http:/'], '', $this->sourcePath));
+            if ($item->isHit()) {
+                return $item->get();
+            }
+        }
+
+        $contents = $this->service->getContents($this->sourcePath);
+
+        if (isset($item) && $item->isMiss()) {
+            $item->set($contents);
+            $item->expiresAfter(600);
+            $this->cache->save($item);
+        }
+
+        return $contents;
     }
 }

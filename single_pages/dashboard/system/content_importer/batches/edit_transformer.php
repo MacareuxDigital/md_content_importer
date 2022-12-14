@@ -69,30 +69,34 @@ if ($batchItemTransformer) {
     <fieldset>
         <?php $transformer->renderForm(); ?>
     </fieldset>
-    <fieldset>
-        <legend><?= t('Preview') ?></legend>
-        <div class="form-group">
-            <div id="preview-alert" class="alert alert-warning" role="alert" style="display: none"></div>
-            <div class="mb-3 row">
-                <?= $form->label('original', t('Original'), ['class' => 'col-sm-2']) ?>
-                <div class="col-sm-10">
-                    <?= $form->textarea('original', $originalString, ['rows' => 5]) ?>
+    <?php if ($transformer->supportPreview()) { ?>
+        <fieldset>
+            <legend><?= t('Preview') ?></legend>
+            <div class="form-group">
+                <div id="preview-alert" class="alert alert-warning" role="alert" style="display: none"></div>
+                <div class="mb-3 row">
+                    <?= $form->label('original', t('Original'), ['class' => 'col-sm-2']) ?>
+                    <div class="col-sm-10">
+                        <?= $form->textarea('original', $originalString, ['rows' => 5]) ?>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <?= $form->label('preview-result', t('Preview Result'), ['class' => 'col-sm-2']) ?>
+                    <div class="col-sm-10">
+                        <?= $form->textarea('preview-result', ['rows' => 5, 'disabled' => true]) ?>
+                    </div>
                 </div>
             </div>
-            <div class="mb-3 row">
-                <?= $form->label('preview-result', t('Preview Result'), ['class' => 'col-sm-2']) ?>
-                <div class="col-sm-10">
-                    <?= $form->textarea('preview-result', ['rows' => 5, 'disabled' => true]) ?>
-                </div>
-            </div>
-        </div>
-    </fieldset>
+        </fieldset>
+    <?php } ?>
     <div class="ccm-dashboard-form-actions-wrapper">
         <div class="ccm-dashboard-form-actions">
             <a href="<?= $cancelLink ?>"
                class="btn btn-secondary float-start"><?= t('Cancel') ?></a>
             <?= $form->submit('save', t('Save Transformer'), ['class' => 'btn btn-primary float-end ms-2']) ?>
-            <?= $form->button('preview', t('Preview'), ['class' => 'btn btn-secondary float-end']) ?>
+            <?php if ($transformer->supportPreview()) { ?>
+                <?= $form->button('preview', t('Preview'), ['class' => 'btn btn-secondary float-end']) ?>
+            <?php } ?>
         </div>
     </div>
 </form>

@@ -1,0 +1,19 @@
+<?php
+defined('C5_EXECUTE') or die("Access Denied.");
+
+/** @var \Concrete\Core\Form\Service\Form $form */
+/** @var string $search */
+/** @var string $replace */
+/** @var \Concrete\Core\Tree\Node\Type\FileFolder $folder */
+$folderNodeID = $folder ? $folder->getTreeNodeID() : null;
+$folders = $folders ?? [];
+$extensions = $extensions ?? '';
+?>
+<div class="form-group">
+    <?= $form->label('folderNodeID', t('Parent Folder')) ?>
+    <?= $form->select('folderNodeID', $folders, $folderNodeID) ?>
+</div>
+<div class="form-group">
+    <?= $form->label('extensions', t('Extensions')) ?>
+    <?= $form->textarea('extensions', $extensions, ['row' => 3, 'placeholder' => '.pdf, .xlsx']) ?>
+</div>

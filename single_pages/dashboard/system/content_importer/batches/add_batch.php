@@ -12,30 +12,37 @@ defined('C5_EXECUTE') or die('Access Denied.');
 /** @var Token $token */
 /** @var Form $form */
 /** @var PageSelector $pageSelector */
+$batchID = $batchID ?? null;
+$name = $name ?? null;
+$sourcePath = $sourcePath ?? null;
+$pageTypeID = $pageTypeID ?? null;
 $pageTypeIDs = $pageTypeIDs ?? [];
+$pageTemplateID = $pageTemplateID ?? null;
 $pageTemplateIDs = $pageTemplateIDs ?? [];
+$parentCID = $parentCID ?? null;
 ?>
 <form method="post" action="<?= $view->action('submit_batch') ?>">
     <?php $token->output('submit_batch') ?>
+    <?= $form->hidden('batchID', $batchID) ?>
     <div class="form-group">
         <?= $form->label('name', t('Batch Name')) ?>
-        <?= $form->text('name') ?>
+        <?= $form->text('name', $name) ?>
     </div>
     <div class="form-group">
         <?= $form->label('sourcePath', t('Source Paths')) ?>
-        <?= $form->textarea('sourcePath', ['rows' => 5]) ?>
+        <?= $form->textarea('sourcePath', $sourcePath, ['rows' => 5]) ?>
     </div>
     <div class="form-group">
         <?= $form->label('pageTypeID', t('Page Type')) ?>
-        <?= $form->select('pageTypeID', $pageTypeIDs) ?>
+        <?= $form->select('pageTypeID', $pageTypeIDs, $pageTypeID) ?>
     </div>
     <div class="form-group">
         <?= $form->label('pageTemplateID', t('Page Template')) ?>
-        <?= $form->select('pageTemplateID', $pageTemplateIDs) ?>
+        <?= $form->select('pageTemplateID', $pageTemplateIDs, $pageTemplateID) ?>
     </div>
     <div class="form-group">
         <?= $form->label('parentCID', t('Parent Page')) ?>
-        <?= $pageSelector->selectPage('parentCID') ?>
+        <?= $pageSelector->selectPage('parentCID', $parentCID) ?>
     </div>
     <div class="ccm-dashboard-form-actions-wrapper">
         <div class="ccm-dashboard-form-actions">

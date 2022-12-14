@@ -3,6 +3,7 @@
 namespace Macareux\ContentImporter\Entity;
 
 use Concrete\Core\Entity\Page\Template as TemplateEntry;
+use Concrete\Core\Page\Page;
 use Concrete\Core\Page\Template;
 use Concrete\Core\Page\Type\Type;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -103,7 +104,7 @@ class Batch
     {
         $sourcePath = $this->getSourcePath();
 
-        return explode(PHP_EOL, $sourcePath);
+        return array_map('trim', explode(PHP_EOL, $sourcePath));
     }
 
     /**
@@ -168,6 +169,11 @@ class Batch
     public function getParentCID(): ?int
     {
         return $this->parentCID;
+    }
+
+    public function getParentPage(): Page
+    {
+        return Page::getByID($this->getParentCID());
     }
 
     /**

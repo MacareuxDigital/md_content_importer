@@ -1,0 +1,112 @@
+<?php
+
+namespace Macareux\ContentImporter\Transformer;
+
+use Concrete\Core\Editor\LinkAbstractor;
+use Concrete\Core\File\Service\File;
+use Concrete\Core\Filesystem\ElementManager;
+use Concrete\Core\Http\Request;
+use Concrete\Core\Support\Facade\Application;
+use Concrete\Core\Tree\Node\Type\FileFolder;
+use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
+use Macareux\ContentImporter\Traits\ImageFileTransformerTrait;
+use Symfony\Component\DomCrawler\Crawler;
+
+class ImageFileContentTransformer implements TransformerInterface
+{
+    use ImageFileTransformerTrait;
+
+    private $extensions;
+
+    /**
+     * @return mixed
+     */
+    public function getExtensions()
+    {
+        return $this->extensions;
+    }
+
+    /**
+     * @param mixed $extensions
+     */
+    public function setExtensions($extensions): void
+    {
+        $this->extensions = $extensions;
+    }
+
+    /**
+     * @param int $folderNodeID
+     */
+    public function setFolderNodeID(int $folderNodeID): void
+    {
+        $this->folderNodeID = $folderNodeID;
+    }
+
+    public function getTransformerName(): string
+    {
+        return tc('ContentImporterTransformer', 'Import Images & Files in HTML');
+    }
+
+    public function getTransformerHandle(): string
+    {
+        return 'image_file_content';
+    }
+
+    public function renderForm(): void
+    {
+        $app = Application::getFacadeApplication();
+
+        $folder = null;
+        if ($this->getFolderNodeID()) {
+            $folder = FileFolder::getByID($this->getFolderNodeID());
+        }
+        $manager = $app->make(ElementManager::class);
+        $manager->get('content_importer/transformer/content', [
+            'form' => $app->make('helper/form'),
+            'folders' => $this->getFolders(),
+            'folder' => $folder,
+            'extensions' => $this->getExtensions(),
+        ], 'md_content_importer')->render();
+    }
+
+    public function updateFromRequest(Request $request): void
+    {
+        $this->setFolderNodeID($request->get('folderNodeID'));
+        $this->setExtensions($request->get('extensions'));
+    }
+
+    public function transform(string $input): string
+    {
+        $app = Application::getFacadeApplication();
+        /** @var ResolverManagerInterface $resolver */
+        $resolver = $app->make(ResolverManagerInterface::class);
+        $crawler = new Crawler($input);
+
+        $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver) {
+            $src = $node->attr('src');
+            if ($src) {
+                $fv = $this->importFile($src);
+                $domNode = $node->getNode(0);
+                $domNode->setAttribute('src', $resolver->resolve(['/download_file', 'view_inline', $fv->getFileUUID()]));
+            }
+        });
+
+        /** @var File $fileHelper */
+        $fileHelper = $app->make('helper/file');
+        $extensions = $this->getExtensions();
+        if ($extensions) {
+            $extensions = array_map('trim', explode(',', $extensions));
+            $crawler->filter('a')->each(function (Crawler $node, $i) use ($resolver, $fileHelper, $extensions) {
+                $href = $node->attr('href');
+                $ext = '.' . $fileHelper->getExtension($href);
+                if (in_array($ext, $extensions, true)) {
+                    $fv = $this->importFile($href);
+                    $domNode = $node->getNode(0);
+                    $domNode->setAttribute('href', $resolver->resolve(['/download_file', 'view', $fv->getFileUUID()]));
+                }
+            });
+        }
+
+        return LinkAbstractor::translateTo($crawler->filter('body')->html());
+    }
+}

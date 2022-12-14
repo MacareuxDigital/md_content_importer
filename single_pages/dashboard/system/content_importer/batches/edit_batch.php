@@ -1,9 +1,14 @@
 <?php
 
+use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\DateTimeCorePageProperty;
+use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\PageTemplateCorePageProperty;
 use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\PublishTargetCorePageProperty;
+use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\UserCorePageProperty;
+use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\VersionCommentCorePageProperty;
 use Concrete\Core\Page\Type\Composer\FormLayoutSet;
 use Concrete\Core\Page\Type\Composer\FormLayoutSetControl;
 use Concrete\Core\Page\Type\Type;
+use Concrete\Core\Support\Facade\Url as UrlFacade;
 use Concrete\Core\Validation\CSRF\Token;
 use Concrete\Core\View\View;
 use Macareux\ContentImporter\Entity\Batch;
@@ -27,7 +32,17 @@ foreach ($formLayoutSets as $formLayoutSet) {
         <?php
         /** @var FormLayoutSetControl $formLayoutSetControl */
         foreach ($formLayoutSetControls as $formLayoutSetControl) {
-            if ($formLayoutSetControl->getPageTypeComposerControlObject() instanceof PublishTargetCorePageProperty) {
+            $composerControlObject = $formLayoutSetControl->getPageTypeComposerControlObject();
+            if ($composerControlObject instanceof PublishTargetCorePageProperty) {
+                continue;
+            }
+            if ($composerControlObject instanceof UserCorePageProperty) {
+                continue;
+            }
+            if ($composerControlObject instanceof VersionCommentCorePageProperty) {
+                continue;
+            }
+            if ($composerControlObject instanceof PageTemplateCorePageProperty) {
                 continue;
             }
             $formLayoutSetControlID = $formLayoutSetControl->getPageTypeComposerFormLayoutSetControlID();
@@ -62,7 +77,8 @@ foreach ($formLayoutSets as $formLayoutSet) {
                             }
                             ?>
                             <div class="btn-group float-end" role="group" aria-label="<?= t('Selector Actions') ?>">
-                                <a href="<?= $view->action('edit_batch_item', $batchItem->getId()) ?>" class="btn btn-light btn-sm"><?= t('Edit Selector') ?></a>
+                                <a href="<?= $view->action('edit_batch_item', $batchItem->getId()) ?>"
+                                   class="btn btn-light btn-sm"><?= t('Edit Selector') ?></a>
                             </div>
                         </div>
                         <?php
@@ -76,6 +92,10 @@ foreach ($formLayoutSets as $formLayoutSet) {
                                        href="<?= $view->action('edit_transformer', $transformer->getId()) ?>"><?= h($transformer->getClass()->getTransformerName()) ?></a>
                                 <?php } ?>
                             </div>
+                            <?php
+                        } elseif ($composerControlObject instanceof DateTimeCorePageProperty) {
+                            ?>
+                            <div class="alert alert-warning"><?= t('You must set Date Time transformer.') ?></div>
                             <?php
                         }
                         ?>
@@ -93,5 +113,12 @@ foreach ($formLayoutSets as $formLayoutSet) {
         }
         ?>
     </fieldset>
+
+    <div class="ccm-dashboard-form-actions-wrapper">
+        <div class="ccm-dashboard-form-actions">
+            <a href="<?= UrlFacade::to('/dashboard/system/content_importer/batches') ?>"
+               class="btn btn-secondary float-start"><?= t('Cancel') ?></a>
+        </div>
+    </div>
     <?php
 }

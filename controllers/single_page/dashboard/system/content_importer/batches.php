@@ -25,8 +25,8 @@ class Batches extends DashboardPageController
 
     public function view()
     {
+        $this->set('token', $this->app->make('token'));
         $this->set('batches', $this->getAll(Batch::class));
-
         $this->set('headerMenu', $this->app->make(ElementManager::class)->get('dashboard/batches/header', 'md_content_importer'));
     }
 
@@ -53,6 +53,43 @@ class Batches extends DashboardPageController
         $this->set('pageTitle', t('Add Batch'));
 
         $this->render('/dashboard/system/content_importer/batches/add_batch');
+    }
+
+    public function edit_batch_basic($id)
+    {
+        /** @var Batch $batch */
+        $batch = $this->getEntry(Batch::class, $id);
+        if ($batch) {
+            $pageTypeIDs = ['' => t('** Select Page Type')];
+            $pageTypes = Type::getList();
+            /** @var Type $pageType */
+            foreach ($pageTypes as $pageType) {
+                $pageTypeIDs[$pageType->getPageTypeID()] = $pageType->getPageTypeDisplayName();
+            }
+            $this->set('pageTypeIDs', $pageTypeIDs);
+
+            $pageTemplateIDs = ['' => t('** Select Page Template')];
+            $pageTemplates = Template::getList();
+            /** @var \Concrete\Core\Entity\Page\Template $pageTemplate */
+            foreach ($pageTemplates as $pageTemplate) {
+                $pageTemplateIDs[$pageTemplate->getPageTemplateID()] = $pageTemplate->getPageTemplateDisplayName();
+            }
+            $this->set('pageTemplateIDs', $pageTemplateIDs);
+
+            $this->set('batchID', $batch->getId());
+            $this->set('name', $batch->getName());
+            $this->set('sourcePath', $batch->getSourcePath());
+            $this->set('pageTypeID', $batch->getPageTypeID());
+            $this->set('pageTemplateID', $batch->getPageTemplateID());
+            $this->set('parentCID', $batch->getParentCID());
+            $this->set('token', $this->app->make('token'));
+            $this->set('pageSelector', $this->app->make('helper/form/page_selector'));
+            $this->set('pageTitle', t('Edit Batch'));
+            $this->render('/dashboard/system/content_importer/batches/add_batch');
+        } else {
+            $this->error->add(t('Invalid Batch.'));
+            $this->view();
+        }
     }
 
     public function submit_batch()
@@ -96,7 +133,12 @@ class Batches extends DashboardPageController
         }
 
         if (!$this->error->has()) {
-            $batch = new Batch();
+            $batchID = $this->post('batchID');
+            if ($batchID) {
+                $batch = $this->getEntry(Batch::class, $batchID);
+            } else {
+                $batch = new Batch();
+            }
             $batch->setName($name);
             $batch->setSourcePath($sourcePath);
             $batch->setPageTypeID($pageTypeID);
@@ -108,7 +150,34 @@ class Batches extends DashboardPageController
 
             $this->flash('success', t('Batch saved successfully.'));
 
-            return $this->buildRedirect($this->action('edit_batch', $batch->getId()));
+            if ($batchID) {
+                return $this->buildRedirect($this->action('view'));
+            } else {
+                return $this->buildRedirect($this->action('edit_batch', $batch->getId()));
+            }
+        }
+
+        $this->view();
+    }
+
+    public function delete_batch()
+    {
+        if (!$this->token->validate('delete_batch')) {
+            $this->error->add($this->token->getErrorMessage());
+        }
+
+        $batch = $this->getEntry(Batch::class, $this->post('batch_id'));
+        if (!$batch) {
+            $this->error->add(t('Invalid Batch.'));
+        }
+
+        if (!$this->error->has()) {
+            $this->entityManager->remove($batch);
+            $this->entityManager->flush();
+
+            $this->flash('success', t('Batch removed successfully.'));
+
+            return $this->buildRedirect($this->action('view'));
         }
 
         $this->view();
@@ -330,17 +399,17 @@ class Batches extends DashboardPageController
             $this->error->add(t('Invalid Batch Item.'));
         }
 
+        /** @var TransformerManager $manager */
+        $manager = $this->app->make(TransformerManager::class);
         $transformerHandleOrID = $this->post('transformer');
         if ($transformerHandleOrID) {
             if (is_numeric($transformerHandleOrID)) {
                 /** @var BatchItemTransformer|null $transformerEntry */
                 $transformerEntry = $this->getEntry(BatchItemTransformer::class, $transformerHandleOrID);
                 if ($transformerEntry) {
-                    $transformer = $transformerEntry->getClass();
+                    $transformer = $manager->getTransformer($transformerEntry->getClass()->getTransformerHandle());
                 }
             } else {
-                /** @var TransformerManager $manager */
-                $manager = $this->app->make(TransformerManager::class);
                 $transformer = $manager->getTransformer($transformerHandleOrID);
             }
         }
@@ -448,7 +517,6 @@ class Batches extends DashboardPageController
 
     private function getPreviewString(BatchItem $batchItem): string
     {
-        $html = '';
         $batch = $batchItem->getBatch();
         $sourcePath = $batch->getSourcePathArray()[0];
         /** @var Crawler $crawler */
