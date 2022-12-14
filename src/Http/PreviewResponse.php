@@ -7,6 +7,7 @@ use Concrete\Core\Error\ErrorList\ErrorList;
 class PreviewResponse implements \JsonSerializable
 {
     protected $error;
+
     protected $response = '';
 
     public function __construct()
@@ -39,17 +40,16 @@ class PreviewResponse implements \JsonSerializable
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function jsonSerialize()
     {
         if ($this->getError()->has()) {
             return $this->getError()->jsonSerialize();
-        } else {
-            $o = new \stdClass();
-            $o->error = false;
-            $o->response = $this->getResponse();
         }
+        $o = new \stdClass();
+        $o->error = false;
+        $o->response = $this->getResponse();
 
         return $o;
     }

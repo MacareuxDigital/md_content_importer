@@ -2,7 +2,6 @@
 
 namespace Macareux\ContentImporter\Transformer;
 
-use Concrete\Core\File\Filesystem;
 use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application;
@@ -10,7 +9,7 @@ use Concrete\Core\Tree\Node\Type\FileFolder;
 use Macareux\ContentImporter\Traits\ImageFileTransformerTrait;
 
 /**
- * Transformer to generate text representation for image_file attribute. e.g. "fid:1"
+ * Transformer to generate text representation for image_file attribute. e.g. "fid:1".
  */
 class ImageFileAttributeTransformer implements TransformerInterface
 {

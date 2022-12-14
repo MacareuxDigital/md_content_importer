@@ -8,11 +8,12 @@ use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application;
 
 /**
- * Transformer uses str_replace
+ * Transformer uses str_replace.
  */
 class ReplaceTransformer implements TransformerInterface
 {
     private $search;
+
     private $replace;
 
     /**
@@ -74,7 +75,7 @@ class ReplaceTransformer implements TransformerInterface
         $manager->get('content_importer/transformer/replace', [
             'form' => $app->make('helper/form'),
             'search' => $this->getSearch(),
-            'replace' => $this->getReplace()
+            'replace' => $this->getReplace(),
         ], 'md_content_importer')->render();
     }
 

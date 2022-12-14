@@ -36,7 +36,7 @@ class Crawler
         $this->cache = $cache;
     }
 
-    public function getContent(int $filterType, int $contentType, string $selector, string $attribute = null): string
+    public function getContent(int $filterType, int $contentType, string $selector, ?string $attribute = null): string
     {
         if ($filterType === BatchItem::TYPE_XPATH) {
             if ($contentType === BatchItem::CONTENT_HTML) {
@@ -69,8 +69,10 @@ class Crawler
 
     /**
      * @param string $xpath
-     * @return string
+     *
      * @throws \InvalidArgumentException
+     *
+     * @return string
      */
     public function getHtmlByXPath(string $xpath): string
     {
@@ -79,10 +81,12 @@ class Crawler
 
     /**
      * @param string $selector
-     * @return string
+     *
      * @throws \RuntimeException
      * @throws \InvalidArgumentException
      * @throws SyntaxErrorException
+     *
+     * @return string
      */
     public function getHtmlBySelector(string $selector): string
     {
@@ -91,8 +95,10 @@ class Crawler
 
     /**
      * @param string $xpath
-     * @return string
+     *
      * @throws \InvalidArgumentException
+     *
+     * @return string
      */
     public function getTextByXPath(string $xpath): string
     {
@@ -101,10 +107,12 @@ class Crawler
 
     /**
      * @param string $selector
-     * @return string
+     *
      * @throws \RuntimeException
      * @throws \InvalidArgumentException
      * @throws SyntaxErrorException
+     *
+     * @return string
      */
     public function getTextBySelector(string $selector): string
     {
@@ -114,8 +122,10 @@ class Crawler
     /**
      * @param string $xpath
      * @param string $attribute
-     * @return string
+     *
      * @throws \InvalidArgumentException
+     *
+     * @return string
      */
     public function getAttributeValueByXPath(string $xpath, string $attribute): string
     {
@@ -125,10 +135,12 @@ class Crawler
     /**
      * @param string $selector
      * @param string $attribute
-     * @return string
+     *
      * @throws \RuntimeException
      * @throws \InvalidArgumentException
      * @throws SyntaxErrorException
+     *
+     * @return string
      */
     public function getAttributeValueBySelector(string $selector, string $attribute): string
     {

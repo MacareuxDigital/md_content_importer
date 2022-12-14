@@ -9,7 +9,9 @@ use Concrete\Core\Support\Facade\Application;
 
 class DateTimeTransformer implements TransformerInterface
 {
-    /** @var string|null */
+    /**
+     * @var string|null
+     */
     private $format;
 
     /**
@@ -61,7 +63,7 @@ class DateTimeTransformer implements TransformerInterface
         $manager = $app->make(ElementManager::class);
         $manager->get('content_importer/transformer/date_time', [
             'form' => $app->make('helper/form'),
-            'format' => $this->getFormat()
+            'format' => $this->getFormat(),
         ], 'md_content_importer')->render();
     }
 

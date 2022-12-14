@@ -24,11 +24,19 @@ class BatchPublisher implements ApplicationAwareInterface
 {
     use ApplicationAwareTrait;
 
-    /** @var Batch */
+    /**
+     * @var Batch
+     */
     protected $batch;
-    /** @var ErrorList */
+
+    /**
+     * @var ErrorList
+     */
     protected $error;
-    /** @var LoggerInterface */
+
+    /**
+     * @var LoggerInterface
+     */
     protected $logger;
 
     /**
@@ -86,9 +94,13 @@ class BatchPublisher implements ApplicationAwareInterface
                         /** @var Key $ak */
                         $ak = $composerControlObject->getAttributeKeyObject();
                         $akc = $ak->getController();
-                        $akc->setAttributeObject($page);
                         if ($akc instanceof SimpleTextExportableAttributeInterface) {
-                            $akc->updateAttributeValueFromTextRepresentation($content, $this->error);
+                            $initialValueObject = $page->getAttributeValueObject($ak);
+                            $akc->setAttributeValue($initialValueObject);
+                            $newValueObject = $akc->updateAttributeValueFromTextRepresentation($content, $this->error);
+                            if ($initialValueObject !== $newValueObject) {
+                                $page->setAttribute($ak, $newValueObject);
+                            }
                         }
                     }
                 }
@@ -104,19 +116,6 @@ class BatchPublisher implements ApplicationAwareInterface
         }
     }
 
-    protected function createBlockRequest(BlockType $blockType, string $content): array
-    {
-        $data = [];
-        switch ($blockType->getBlockTypeHandle()) {
-            case 'content':
-            default:
-                $data['content'] = $content;
-                break;
-        }
-
-        return $data;
-    }
-
     public function getTransformedString(BatchItem $batchItem, string $sourcePath): string
     {
         /** @var Crawler $crawler */
@@ -129,5 +128,18 @@ class BatchPublisher implements ApplicationAwareInterface
         }
 
         return $content;
+    }
+
+    protected function createBlockRequest(BlockType $blockType, string $content): array
+    {
+        $data = [];
+        switch ($blockType->getBlockTypeHandle()) {
+            case 'content':
+            default:
+                $data['content'] = $content;
+                break;
+        }
+
+        return $data;
     }
 }

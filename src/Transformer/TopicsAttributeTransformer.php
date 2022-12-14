@@ -8,7 +8,7 @@ use Concrete\Core\Tree\Node\Type\Topic;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
- * Transformer to generate text representation for topics attribute. e.g. "tid:1|tid:2|tid:3"
+ * Transformer to generate text representation for topics attribute. e.g. "tid:1|tid:2|tid:3".
  */
 class TopicsAttributeTransformer implements TransformerInterface
 {
@@ -31,7 +31,9 @@ class TopicsAttributeTransformer implements TransformerInterface
     {
         $topics = [];
         $crawler = new Crawler($input);
-        foreach ($crawler->children() as $child) {
+
+        /** @var \DOMElement $child */
+        foreach ($crawler->filter('body')->children() as $child) {
             $topicName = $child->textContent;
             $topic = Topic::getNodeByName($topicName);
             if ($topic) {
@@ -56,5 +58,4 @@ class TopicsAttributeTransformer implements TransformerInterface
     {
         // No options
     }
-
 }

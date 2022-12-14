@@ -15,7 +15,9 @@ use Concrete\Core\Tree\Node\Type\FileFolder;
 
 trait ImageFileTransformerTrait
 {
-    /** @var int */
+    /**
+     * @var int
+     */
     private $folderNodeID;
 
     public function supportPreview(): bool
@@ -44,30 +46,6 @@ trait ImageFileTransformerTrait
         return new ErrorList();
     }
 
-    private function getFolders(): array
-    {
-        $folders = [];
-        $filesystem = new Filesystem();
-        $folder = $filesystem->getRootFolder();
-        if ($folder instanceof FileFolder) {
-            $nodes = $folder->getHierarchicalNodesOfType(
-                "file_folder",
-                1,
-                true,
-                true,
-                20
-            );
-
-            foreach ($nodes as $node) {
-                /** @var FileFolder $treeNodeObject */
-                $treeNodeObject = $node["treeNodeObject"];
-                $folders[$treeNodeObject->getTreeNodeID()] = $treeNodeObject->getTreeNodeName();
-            }
-        }
-
-        return $folders;
-    }
-
     public function importFile($file): Version
     {
         $app = Application::getFacadeApplication();
@@ -92,5 +70,29 @@ trait ImageFileTransformerTrait
         }
 
         return $importer->importLocalFile($fullFilename, $filename[1] . '.' . $filename[2], $options);
+    }
+
+    private function getFolders(): array
+    {
+        $folders = [];
+        $filesystem = new Filesystem();
+        $folder = $filesystem->getRootFolder();
+        if ($folder instanceof FileFolder) {
+            $nodes = $folder->getHierarchicalNodesOfType(
+                'file_folder',
+                1,
+                true,
+                true,
+                20
+            );
+
+            foreach ($nodes as $node) {
+                /** @var FileFolder $treeNodeObject */
+                $treeNodeObject = $node['treeNodeObject'];
+                $folders[$treeNodeObject->getTreeNodeID()] = $treeNodeObject->getTreeNodeName();
+            }
+        }
+
+        return $folders;
     }
 }

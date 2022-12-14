@@ -14,10 +14,15 @@ use Doctrine\ORM\Mapping as ORM;
 class BatchItem
 {
     public const TYPE_XPATH = 1;
+
     public const TYPE_SELECTOR = 2;
+
     public const TYPE_FILENAME = 3;
+
     public const CONTENT_HTML = 10;
+
     public const CONTENT_TEXT = 20;
+
     public const CONTENT_ATTRIBUTE = 30;
 
     /**

@@ -7,7 +7,7 @@ use Concrete\Core\Foundation\Service\Provider as ServiceProvider;
 class TransformerServiceProvider extends ServiceProvider
 {
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function register()
     {
