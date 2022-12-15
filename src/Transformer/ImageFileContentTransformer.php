@@ -34,14 +34,6 @@ class ImageFileContentTransformer implements TransformerInterface
         $this->extensions = $extensions;
     }
 
-    /**
-     * @param int $folderNodeID
-     */
-    public function setFolderNodeID(int $folderNodeID): void
-    {
-        $this->folderNodeID = $folderNodeID;
-    }
-
     public function getTransformerName(): string
     {
         return tc('ContentImporterTransformer', 'Import Images & Files in HTML');
@@ -65,6 +57,7 @@ class ImageFileContentTransformer implements TransformerInterface
             'form' => $app->make('helper/form'),
             'folders' => $this->getFolders(),
             'folder' => $folder,
+            'documentRoot' => $this->getDocumentRoot(),
             'extensions' => $this->getExtensions(),
         ], 'md_content_importer')->render();
     }
@@ -73,6 +66,7 @@ class ImageFileContentTransformer implements TransformerInterface
     {
         $this->setFolderNodeID($request->get('folderNodeID'));
         $this->setExtensions($request->get('extensions'));
+        $this->setDocumentRoot($request->get('documentRoot'));
     }
 
     public function transform(string $input): string

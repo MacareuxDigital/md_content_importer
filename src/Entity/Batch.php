@@ -9,6 +9,7 @@ use Concrete\Core\Page\Type\Type;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Finder\Finder;
 
 /**
  * @ORM\Entity
@@ -102,9 +103,24 @@ class Batch
      */
     public function getSourcePathArray(): array
     {
+        $sourcePaths = [];
         $sourcePath = $this->getSourcePath();
+        $originalPaths = array_map('trim', explode(PHP_EOL, $sourcePath));
+        foreach ($originalPaths as $path) {
+            $url = parse_url($path);
+            // Not external url, not a file, local path
+            if (!isset($url['host']) && strpos('.htm', $path) === false) {
+                $finder = new Finder();
+                $finder->in($path)->files()->name(['*.html', '*.htm'])->depth('== 0');
+                foreach ($finder as $file) {
+                    $sourcePaths[] = $file->getRealPath();
+                }
+            } else {
+                $sourcePaths[] = $path;
+            }
+        }
 
-        return array_map('trim', explode(PHP_EOL, $sourcePath));
+        return $sourcePaths;
     }
 
     /**

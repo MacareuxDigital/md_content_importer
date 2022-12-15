@@ -38,12 +38,14 @@ class ImageFileAttributeTransformer implements TransformerInterface
             'form' => $app->make('helper/form'),
             'folders' => $this->getFolders(),
             'folder' => $folder,
+            'documentRoot' => $this->getDocumentRoot(),
         ], 'md_content_importer')->render();
     }
 
     public function updateFromRequest(Request $request): void
     {
         $this->setFolderNodeID($request->get('folderNodeID'));
+        $this->setDocumentRoot($request->get('documentRoot'));
     }
 
     public function transform(string $input): string

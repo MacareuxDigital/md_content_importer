@@ -16,9 +16,14 @@ use Concrete\Core\Tree\Node\Type\FileFolder;
 trait ImageFileTransformerTrait
 {
     /**
-     * @var int
+     * @var int|null
      */
     private $folderNodeID;
+
+    /**
+     * @var string|null
+     */
+    private $documentRoot;
 
     public function supportPreview(): bool
     {
@@ -41,6 +46,22 @@ trait ImageFileTransformerTrait
         $this->folderNodeID = $folderNodeID;
     }
 
+    /**
+     * @return string|null
+     */
+    public function getDocumentRoot(): ?string
+    {
+        return $this->documentRoot;
+    }
+
+    /**
+     * @param string $documentRoot
+     */
+    public function setDocumentRoot(string $documentRoot): void
+    {
+        $this->documentRoot = $documentRoot;
+    }
+
     public function validateRequest(Request $request): ErrorList
     {
         return new ErrorList();
@@ -48,6 +69,10 @@ trait ImageFileTransformerTrait
 
     public function importFile($file): Version
     {
+        if ($this->getDocumentRoot()) {
+            $file = $this->getDocumentRoot() . $file;
+        }
+
         $app = Application::getFacadeApplication();
         /** @var File $fileHelper */
         $fileHelper = $app->make('helper/file');
