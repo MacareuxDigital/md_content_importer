@@ -83,23 +83,25 @@ class BatchPublisher implements ApplicationAwareInterface
                 $formLayoutSetControl = $batchItem->getPtComposerFormLayoutSetControl();
                 if ($formLayoutSetControl) {
                     $content = $this->getTransformedString($batchItem, $sourcePath);
-                    $composerControlObject = $formLayoutSetControl->getPageTypeComposerControlObject();
-                    if ($composerControlObject instanceof BlockControl) {
-                        /** @var BlockType $bt */
-                        $bt = $composerControlObject->getBlockTypeObject();
-                        $blockRequest = $this->createBlockRequest($bt, $content);
-                        $composerControlObject->publishToPage($page, $blockRequest, []);
-                    }
-                    if ($composerControlObject instanceof CollectionAttributeControl) {
-                        /** @var Key $ak */
-                        $ak = $composerControlObject->getAttributeKeyObject();
-                        $akc = $ak->getController();
-                        if ($akc instanceof SimpleTextExportableAttributeInterface) {
-                            $initialValueObject = $page->getAttributeValueObject($ak);
-                            $akc->setAttributeValue($initialValueObject);
-                            $newValueObject = $akc->updateAttributeValueFromTextRepresentation($content, $this->error);
-                            if ($initialValueObject !== $newValueObject) {
-                                $page->setAttribute($ak, $newValueObject);
+                    if ($content) {
+                        $composerControlObject = $formLayoutSetControl->getPageTypeComposerControlObject();
+                        if ($composerControlObject instanceof BlockControl) {
+                            /** @var BlockType $bt */
+                            $bt = $composerControlObject->getBlockTypeObject();
+                            $blockRequest = $this->createBlockRequest($bt, $content);
+                            $composerControlObject->publishToPage($page, $blockRequest, []);
+                        }
+                        if ($composerControlObject instanceof CollectionAttributeControl) {
+                            /** @var Key $ak */
+                            $ak = $composerControlObject->getAttributeKeyObject();
+                            $akc = $ak->getController();
+                            if ($akc instanceof SimpleTextExportableAttributeInterface) {
+                                $initialValueObject = $page->getAttributeValueObject($ak);
+                                $akc->setAttributeValue($initialValueObject);
+                                $newValueObject = $akc->updateAttributeValueFromTextRepresentation($content, $this->error);
+                                if ($initialValueObject !== $newValueObject) {
+                                    $page->setAttribute($ak, $newValueObject);
+                                }
                             }
                         }
                     }
@@ -120,14 +122,19 @@ class BatchPublisher implements ApplicationAwareInterface
     {
         /** @var Crawler $crawler */
         $crawler = $this->app->make(Crawler::class, ['sourcePath' => $sourcePath]);
-        $content = $crawler->getContent($batchItem->getFilterType(), $batchItem->getContentType(), $batchItem->getSelector(), $batchItem->getAttribute());
+        try {
+            $content = $crawler->getContent($batchItem->getFilterType(), $batchItem->getContentType(), $batchItem->getSelector(), $batchItem->getAttribute());
 
-        foreach ($batchItem->getBatchItemTransformers() as $batchItemTransformer) {
-            $transformer = $batchItemTransformer->getClass();
-            $content = $transformer->transform($content);
+            foreach ($batchItem->getBatchItemTransformers() as $batchItemTransformer) {
+                $transformer = $batchItemTransformer->getClass();
+                $content = $transformer->transform($content);
+            }
+
+            return $content;
+        } catch (\InvalidArgumentException $exception) {
+            $this->logger->warning(t('Could not get content for %s', $batchItem->getPtComposerFormLayoutSetControl()->getPageTypeComposerControlDisplayLabel()));
+            return '';
         }
-
-        return $content;
     }
 
     protected function createBlockRequest(BlockType $blockType, string $content): array

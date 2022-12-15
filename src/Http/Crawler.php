@@ -36,7 +36,7 @@ class Crawler
         $this->cache = $cache;
     }
 
-    public function getContent(int $filterType, int $contentType, string $selector, ?string $attribute = null): string
+    public function getContent(int $filterType, int $contentType, ?string $selector = null, ?string $attribute = null): string
     {
         if ($filterType === BatchItem::TYPE_XPATH) {
             if ($contentType === BatchItem::CONTENT_HTML) {

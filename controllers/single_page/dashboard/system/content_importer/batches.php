@@ -3,11 +3,13 @@
 namespace Concrete\Package\MdContentImporter\Controller\SinglePage\Dashboard\System\ContentImporter;
 
 use Concrete\Core\Filesystem\ElementManager;
+use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Page\Controller\DashboardPageController;
 use Concrete\Core\Page\Template;
 use Concrete\Core\Page\Type\Composer\FormLayoutSet;
 use Concrete\Core\Page\Type\Composer\FormLayoutSetControl;
 use Concrete\Core\Page\Type\Type;
+use Macareux\ContentImporter\Command\ImportBatchCommand;
 use Macareux\ContentImporter\Entity\Batch;
 use Macareux\ContentImporter\Entity\BatchItem;
 use Macareux\ContentImporter\Entity\BatchItemTransformer;
@@ -513,6 +515,49 @@ class Batches extends DashboardPageController
         }
 
         return new JsonResponse($response);
+    }
+
+    public function import_batch()
+    {
+        if (!$this->token->validate('import_batch')) {
+            $this->error->add($this->token->getErrorMessage());
+        }
+
+        /** @var Batch $batch */
+        $batch = $this->getEntry(Batch::class, $this->post('batch_id'));
+        if (!$batch) {
+            $this->error->add(t('Invalid Parameter.'));
+        }
+
+        $pageType = $batch->getPageType();
+        if ($pageType) {
+            if (!$this->canAddPageType($pageType)) {
+                $this->error->add(t('You need permission to add %s page type.', $pageType->getPageTypeDisplayName()));
+            }
+        } else {
+            $this->error->add(t('Invalid Page Type.'));
+        }
+
+        if (!$this->error->has()) {
+            $commandBatch = \Concrete\Core\Command\Batch\Batch::create(t('Import pages'), function () use ($batch) {
+                foreach ($batch->getSourcePathArray() as $sourcePath) {
+                    $command = new ImportBatchCommand();
+                    $command->setBatchID($batch->getId());
+                    $command->setSourcePath($sourcePath);
+                    yield $command;
+                }
+            });
+
+            return $this->dispatchBatch($commandBatch);
+        }
+
+        return $this->app->make(ResponseFactoryInterface::class)->error($this->error);
+    }
+
+    public function import_completed()
+    {
+        $this->set('message', t('Import Completed.'));
+        $this->view();
     }
 
     private function getPreviewString(BatchItem $batchItem): string
