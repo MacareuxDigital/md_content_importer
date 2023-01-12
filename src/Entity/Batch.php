@@ -38,6 +38,12 @@ class Batch
     private $sourcePath = '';
 
     /**
+     * @var string
+     * @ORM\Column(type="text")
+     */
+    private $documentRoot = '';
+
+    /**
      * @var int|null
      * @ORM\Column(type="integer")
      */
@@ -129,6 +135,22 @@ class Batch
     public function setSourcePath(string $sourcePath): void
     {
         $this->sourcePath = $sourcePath;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDocumentRoot(): string
+    {
+        return $this->documentRoot;
+    }
+
+    /**
+     * @param string $documentRoot
+     */
+    public function setDocumentRoot(string $documentRoot): void
+    {
+        $this->documentRoot = $documentRoot;
     }
 
     /**

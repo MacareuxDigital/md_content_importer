@@ -81,6 +81,7 @@ class Batches extends DashboardPageController
             $this->set('batchID', $batch->getId());
             $this->set('name', $batch->getName());
             $this->set('sourcePath', $batch->getSourcePath());
+            $this->set('documentRoot', $batch->getDocumentRoot());
             $this->set('pageTypeID', $batch->getPageTypeID());
             $this->set('pageTemplateID', $batch->getPageTemplateID());
             $this->set('parentCID', $batch->getParentCID());
@@ -110,6 +111,11 @@ class Batches extends DashboardPageController
             $this->error->add(t('Please input source path.'));
         }
 
+        $documentRoot = $this->post('documentRoot');
+        if (!$documentRoot) {
+            $this->error->add(t('Please input document root.'));
+        }
+
         $pageTypeID = $this->post('pageTypeID');
         if ($pageTypeID) {
             $pageType = Type::getByID($pageTypeID);
@@ -134,8 +140,8 @@ class Batches extends DashboardPageController
             $this->error->add(t('Please select Parent Page.'));
         }
 
+        $batchID = $this->post('batchID');
         if (!$this->error->has()) {
-            $batchID = $this->post('batchID');
             if ($batchID) {
                 $batch = $this->getEntry(Batch::class, $batchID);
             } else {
@@ -143,6 +149,7 @@ class Batches extends DashboardPageController
             }
             $batch->setName($name);
             $batch->setSourcePath($sourcePath);
+            $batch->setDocumentRoot(rtrim($documentRoot, '/'));
             $batch->setPageTypeID($pageTypeID);
             $batch->setPageTemplateID($pageTemplateID);
             $batch->setParentCID($parentCID);
@@ -159,7 +166,7 @@ class Batches extends DashboardPageController
             }
         }
 
-        $this->view();
+        $this->edit_batch_basic($batchID);
     }
 
     public function delete_batch()

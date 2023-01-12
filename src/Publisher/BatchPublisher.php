@@ -2,6 +2,7 @@
 
 namespace Macareux\ContentImporter\Publisher;
 
+use Carbon\CarbonImmutable;
 use Concrete\Core\Application\ApplicationAwareInterface;
 use Concrete\Core\Application\ApplicationAwareTrait;
 use Concrete\Core\Attribute\SimpleTextExportableAttributeInterface;
@@ -15,8 +16,10 @@ use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\DateTimeCorePagePr
 use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\DescriptionCorePageProperty;
 use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\NameCorePageProperty;
 use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\UrlSlugCorePageProperty;
+use Doctrine\ORM\EntityManagerInterface;
 use Macareux\ContentImporter\Entity\Batch;
 use Macareux\ContentImporter\Entity\BatchItem;
+use Macareux\ContentImporter\Entity\ImportBatchLog;
 use Macareux\ContentImporter\Http\Crawler;
 use Psr\Log\LoggerInterface;
 
@@ -39,14 +42,18 @@ class BatchPublisher implements ApplicationAwareInterface
      */
     protected $logger;
 
+    /** @var EntityManagerInterface */
+    protected $entityManager;
+
     /**
      * @param Batch $batch
      */
-    public function __construct(Batch $batch, ErrorList $error, LoggerFactory $factory)
+    public function __construct(Batch $batch, ErrorList $error, LoggerFactory $factory, EntityManagerInterface $entityManager)
     {
         $this->batch = $batch;
         $this->error = $error;
         $this->logger = $factory->createLogger('content_importer');
+        $this->entityManager = $entityManager;
     }
 
     public function publish(string $sourcePath)
@@ -109,6 +116,19 @@ class BatchPublisher implements ApplicationAwareInterface
             }
 
             $pageType->publish($page);
+
+            $oldPath = str_replace($this->batch->getDocumentRoot(), '', $sourcePath);
+            if ($oldPath !== $page->getCollectionPath()) {
+                $page->addAdditionalPagePath($oldPath);
+            }
+
+            $log = new ImportBatchLog();
+            $log->setBatch($this->batch);
+            $log->setOriginal($sourcePath);
+            $log->setImportedPage($page);
+            $log->setImportDate(CarbonImmutable::now());
+            $this->entityManager->persist($log);
+            $this->entityManager->flush();
         } else {
             $this->error->add(t('Failed to start importing.'));
         }

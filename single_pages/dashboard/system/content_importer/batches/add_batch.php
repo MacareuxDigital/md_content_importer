@@ -14,6 +14,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
 /** @var PageSelector $pageSelector */
 $batchID = $batchID ?? null;
 $name = $name ?? null;
+$documentRoot = $documentRoot ?? null;
 $sourcePath = $sourcePath ?? null;
 $pageTypeID = $pageTypeID ?? null;
 $pageTypeIDs = $pageTypeIDs ?? [];
@@ -31,6 +32,10 @@ $parentCID = $parentCID ?? null;
     <div class="form-group">
         <?= $form->label('sourcePath', t('Source Paths')) ?>
         <?= $form->textarea('sourcePath', $sourcePath, ['rows' => 5]) ?>
+    </div>
+    <div class="form-group">
+        <?= $form->label('documentRoot', t('Document Root')) ?>
+        <?= $form->text('documentRoot', $documentRoot) ?>
     </div>
     <div class="form-group">
         <?= $form->label('pageTypeID', t('Page Type')) ?>
