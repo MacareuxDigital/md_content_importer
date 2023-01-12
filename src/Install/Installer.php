@@ -31,6 +31,7 @@ final class Installer
         $singlePages = [
             '/dashboard/system/content_importer' => 'Content Importer',
             '/dashboard/system/content_importer/batches' => 'Batches',
+            '/dashboard/system/content_importer/list_importer' => 'List Importer',
         ];
         foreach ($singlePages as $path => $name) {
             $this->installSinglePage($path, $name);

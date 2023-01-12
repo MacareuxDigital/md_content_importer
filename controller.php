@@ -11,7 +11,7 @@ class Controller extends Package
 {
     protected $appVersionRequired = '9.0.0';
     protected $pkgHandle = 'md_content_importer';
-    protected $pkgVersion = '0.0.1';
+    protected $pkgVersion = '0.0.2';
     protected $pkgAutoloaderRegistries = [
         'src' => '\Macareux\ContentImporter',
     ];
