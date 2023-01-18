@@ -78,7 +78,11 @@ class ImageFileContentTransformer implements TransformerInterface
         /* @var \Concrete\Core\Entity\Site\Site $site */
         $site = $app->make('site')->getSite();
         $siteUrl = $site->getSiteCanonicalURL();
-        $canonical = UrlImmutable::createFromUrl($siteUrl);
+        if ($siteUrl) {
+            $canonical = UrlImmutable::createFromUrl($siteUrl);
+        } else {
+            $canonical = UrlImmutable::createFromUrl(Request::getInstance()->getRequestUri());
+        }
         $crawler = new Crawler($input);
 
         $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver, $canonical) {
