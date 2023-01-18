@@ -115,7 +115,7 @@ class Batch
         foreach ($originalPaths as $path) {
             $url = parse_url($path);
             // Not external url, not a file, local path
-            if (!isset($url['host']) && strpos('.htm', $path) === false) {
+            if (!isset($url['host']) && strpos($path, '.htm') === false) {
                 $finder = new Finder();
                 $finder->in($path)->files()->name(['*.html', '*.htm'])->depth('== 0');
                 foreach ($finder as $file) {
