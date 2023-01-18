@@ -9,6 +9,7 @@ use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
+use Concrete\Core\Url\UrlImmutable;
 use Macareux\ContentImporter\Traits\ImageFileTransformerTrait;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -74,11 +75,15 @@ class ImageFileContentTransformer implements TransformerInterface
         $app = Application::getFacadeApplication();
         /** @var ResolverManagerInterface $resolver */
         $resolver = $app->make(ResolverManagerInterface::class);
+        /* @var \Concrete\Core\Entity\Site\Site $site */
+        $site = $app->make('site')->getSite();
+        $siteUrl = $site->getSiteCanonicalURL();
+        $canonical = UrlImmutable::createFromUrl($siteUrl);
         $crawler = new Crawler($input);
 
-        $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver) {
+        $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver, $canonical) {
             $src = $node->attr('src');
-            if ($src) {
+            if ($src && strpos($src, $canonical->getHost()) === false) {
                 $fv = $this->importFile($src);
                 $domNode = $node->getNode(0);
                 $domNode->setAttribute('src', $resolver->resolve(['/download_file', 'view_inline', $fv->getFileUUID()]));
@@ -90,13 +95,15 @@ class ImageFileContentTransformer implements TransformerInterface
         $extensions = $this->getExtensions();
         if ($extensions) {
             $extensions = array_map('trim', explode(',', $extensions));
-            $crawler->filter('a')->each(function (Crawler $node, $i) use ($resolver, $fileHelper, $extensions) {
+            $crawler->filter('a')->each(function (Crawler $node, $i) use ($resolver, $fileHelper, $extensions, $canonical) {
                 $href = $node->attr('href');
-                $ext = '.' . $fileHelper->getExtension($href);
-                if (in_array($ext, $extensions, true)) {
-                    $fv = $this->importFile($href);
-                    $domNode = $node->getNode(0);
-                    $domNode->setAttribute('href', $resolver->resolve(['/download_file', 'view', $fv->getFileUUID()]));
+                if ($href && strpos($href, $canonical->getHost()) === false) {
+                    $ext = '.' . $fileHelper->getExtension($href);
+                    if (in_array($ext, $extensions, true)) {
+                        $fv = $this->importFile($href);
+                        $domNode = $node->getNode(0);
+                        $domNode->setAttribute('href', $resolver->resolve(['/download_file', 'view', $fv->getFileUUID()]));
+                    }
                 }
             });
         }
