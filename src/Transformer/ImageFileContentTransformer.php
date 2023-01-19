@@ -81,13 +81,13 @@ class ImageFileContentTransformer implements TransformerInterface
         if ($siteUrl) {
             $canonical = UrlImmutable::createFromUrl($siteUrl);
         } else {
-            $canonical = UrlImmutable::createFromUrl(Request::getInstance()->getRequestUri());
+            $canonical = UrlImmutable::createFromUrl(Request::getInstance()->getUri());
         }
         $crawler = new Crawler($input);
 
         $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver, $canonical) {
             $src = $node->attr('src');
-            if ($src && strpos($src, $canonical->getHost()) === false) {
+            if ($src && strpos($src, (string) $canonical->getHost()) === false) {
                 $fv = $this->importFile($src);
                 $domNode = $node->getNode(0);
                 $domNode->setAttribute('src', $resolver->resolve(['/download_file', 'view_inline', $fv->getFileUUID()]));
@@ -101,7 +101,7 @@ class ImageFileContentTransformer implements TransformerInterface
             $extensions = array_map('trim', explode(',', $extensions));
             $crawler->filter('a')->each(function (Crawler $node, $i) use ($resolver, $fileHelper, $extensions, $canonical) {
                 $href = $node->attr('href');
-                if ($href && strpos($href, $canonical->getHost()) === false) {
+                if ($href && strpos($href, (string) $canonical->getHost()) === false) {
                     $ext = '.' . $fileHelper->getExtension($href);
                     if (in_array($ext, $extensions, true)) {
                         $fv = $this->importFile($href);
