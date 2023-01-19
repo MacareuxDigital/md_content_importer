@@ -73,6 +73,7 @@ class BatchItem
     /**
      * @var Collection<BatchItemTransformer>
      * @ORM\OneToMany(targetEntity="BatchItemTransformer", mappedBy="batchItem", cascade={"persist", "remove"})
+     * @ORM\OrderBy({"orderIndex" = "ASC"})
      */
     private $batchItemTransformers;
 

@@ -33,6 +33,12 @@ class BatchItemTransformer
     private $batchItem;
 
     /**
+     * @var int
+     * @ORM\Column(type="integer")
+     */
+    private $orderIndex = 0;
+
+    /**
      * @return int|null
      */
     public function getId(): ?int
@@ -70,5 +76,21 @@ class BatchItemTransformer
     public function setBatchItem(BatchItem $batchItem): void
     {
         $this->batchItem = $batchItem;
+    }
+
+    /**
+     * @return int
+     */
+    public function getOrder(): int
+    {
+        return $this->orderIndex;
+    }
+
+    /**
+     * @param int $order
+     */
+    public function setOrder(int $order): void
+    {
+        $this->orderIndex = $order;
     }
 }

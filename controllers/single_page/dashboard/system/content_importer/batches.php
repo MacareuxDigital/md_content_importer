@@ -428,6 +428,8 @@ class Batches extends DashboardPageController
             if (!$this->error->has()) {
                 if (!isset($transformerEntry) || !$transformerEntry) {
                     $transformerEntry = new BatchItemTransformer();
+                    $transformers = $batchItem->getBatchItemTransformers();
+                    $transformerEntry->setOrder(count($transformers) + 1);
                 }
                 $transformer->updateFromRequest($this->getRequest());
                 $transformerEntry->setClass($transformer);
@@ -522,6 +524,51 @@ class Batches extends DashboardPageController
         }
 
         return new JsonResponse($response);
+    }
+
+    public function submit_transformer_order($id)
+    {
+        if (!$this->token->validate('order_transformers')) {
+            $this->error->add($this->token->getErrorMessage());
+        }
+
+        /** @var BatchItem $batchItem */
+        $batchItem = $this->getEntry(BatchItem::class, $id);
+        if (!$batchItem) {
+            $this->error->add(t('Invalid Batch Item.'));
+        }
+
+        if ($batchItem && !$this->error->has()) {
+            $transformerIDs = $this->post('transformerOrder');
+            foreach ($transformerIDs as $index => $transformerID) {
+                /** @var BatchItemTransformer $transformer */
+                $transformer = $this->getEntry(BatchItemTransformer::class, $transformerID);
+                $transformer->setOrder($index + 1);
+                $this->entityManager->persist($transformer);
+            }
+            $this->entityManager->flush();;
+
+            $this->flash('success', t('Transformers reordered successfully.'));
+
+            return $this->buildRedirect($this->action('edit_batch', $batchItem->getBatch()->getId()));
+        } else {
+            $this->view();
+        }
+    }
+
+    public function order_transformers($id)
+    {
+        /** @var BatchItem $batchItem */
+        $batchItem = $this->getEntry(BatchItem::class, $id);
+        if ($batchItem) {
+            $this->set('batchItem', $batchItem);
+            $this->set('transformers', $batchItem->getBatchItemTransformers());
+            $this->set('pageTitle', t('Order Transformers'));
+            $this->render('/dashboard/system/content_importer/batches/order_transformers');
+        } else {
+            $this->error->add(t('Invalid Batch Item.'));
+            $this->view();
+        }
     }
 
     public function import_batch()

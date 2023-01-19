@@ -102,6 +102,11 @@ foreach ($formLayoutSets as $formLayoutSet) {
                         <a href="<?= $view->action('add_transformer', $batchItem->getId()) ?>"
                            class="btn btn-primary btn-sm"><?= t('Add Transformer') ?></a>
                         <?php
+                        if ($transformers->count() > 1) { ?>
+                            <a href="<?= $view->action('order_transformers', $batchItem->getId()) ?>"
+                               class="btn btn-secondary btn-sm"><?= t('Order Transformer') ?></a>
+                            <?php
+                        }
                     } else {
                         ?>
                         <a href="<?= $view->action('add_batch_item', $batch->getId(), $formLayoutSetControlID) ?>"

@@ -17,6 +17,7 @@ class Logs extends DashboardPageController
     {
         /** @var ImportBatchLogList $list */
         $list = $this->app->make(ImportBatchLogList::class);
+        $list->sortBy('l.import_date', 'DESC');
         $factory = new PaginationFactory(Request::getInstance());
         $pagination = $factory->createPaginationObject($list, PaginationFactory::PERMISSIONED_PAGINATION_STYLE_PAGER);
         $this->set('list', $list);
