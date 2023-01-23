@@ -2,8 +2,10 @@
 
 namespace Macareux\ContentImporter\Transformer;
 
+use Concrete\Core\File\Import\ImportException;
 use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Http\Request;
+use Concrete\Core\Logging\LoggerFactory;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
 use Macareux\ContentImporter\Traits\ImageFileTransformerTrait;
@@ -50,8 +52,17 @@ class ImageFileAttributeTransformer implements TransformerInterface
 
     public function transform(string $input): string
     {
-        $fv = $this->importFile($input);
+        $app = Application::getFacadeApplication();
+        /** @var LoggerFactory $loggerFactory */
+        $loggerFactory = $app->make(LoggerFactory::class);
+        $logger = $loggerFactory->createLogger('importer');
+        try {
+            $fv = $this->importFile($input);
+            return 'fid:' . $fv->getFileID();
+        } catch (ImportException $exception) {
+            $logger->warning(sprintf('Failed to import file %s (reason: %s)', $input, $exception->getMessage()));
+        }
 
-        return 'fid:' . $fv->getFileID();
+        return $input;
     }
 }

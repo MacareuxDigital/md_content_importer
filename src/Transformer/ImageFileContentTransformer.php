@@ -3,9 +3,11 @@
 namespace Macareux\ContentImporter\Transformer;
 
 use Concrete\Core\Editor\LinkAbstractor;
+use Concrete\Core\File\Import\ImportException;
 use Concrete\Core\File\Service\File;
 use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Http\Request;
+use Concrete\Core\Logging\LoggerFactory;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
@@ -75,6 +77,11 @@ class ImageFileContentTransformer implements TransformerInterface
         $app = Application::getFacadeApplication();
         /** @var ResolverManagerInterface $resolver */
         $resolver = $app->make(ResolverManagerInterface::class);
+
+        /** @var LoggerFactory $loggerFactory */
+        $loggerFactory = $app->make(LoggerFactory::class);
+        $logger = $loggerFactory->createLogger('importer');
+
         /* @var \Concrete\Core\Entity\Site\Site $site */
         $site = $app->make('site')->getSite();
         $siteUrl = $site->getSiteCanonicalURL();
@@ -85,12 +92,16 @@ class ImageFileContentTransformer implements TransformerInterface
         }
         $crawler = new Crawler($input);
 
-        $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver, $canonical) {
+        $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver, $canonical, $logger) {
             $src = $node->attr('src');
             if ($src && strpos($src, (string) $canonical->getHost()) === false) {
-                $fv = $this->importFile($src);
-                $domNode = $node->getNode(0);
-                $domNode->setAttribute('src', $resolver->resolve(['/download_file', 'view_inline', $fv->getFileUUID()]));
+                try {
+                    $fv = $this->importFile($src);
+                    $domNode = $node->getNode(0);
+                    $domNode->setAttribute('src', $resolver->resolve(['/download_file', 'view_inline', $fv->getFileUUID()]));
+                } catch (ImportException $exception) {
+                    $logger->warning(sprintf('Failed to import file %s (reason: %s)', $src, $exception->getMessage()));
+                }
             }
         });
 
@@ -99,14 +110,18 @@ class ImageFileContentTransformer implements TransformerInterface
         $extensions = $this->getExtensions();
         if ($extensions) {
             $extensions = array_map('trim', explode(',', $extensions));
-            $crawler->filter('a')->each(function (Crawler $node, $i) use ($resolver, $fileHelper, $extensions, $canonical) {
+            $crawler->filter('a')->each(function (Crawler $node, $i) use ($resolver, $fileHelper, $extensions, $canonical, $logger) {
                 $href = $node->attr('href');
                 if ($href && strpos($href, (string) $canonical->getHost()) === false) {
                     $ext = '.' . $fileHelper->getExtension($href);
                     if (in_array($ext, $extensions, true)) {
-                        $fv = $this->importFile($href);
-                        $domNode = $node->getNode(0);
-                        $domNode->setAttribute('href', $resolver->resolve(['/download_file', 'view', $fv->getFileUUID()]));
+                        try {
+                            $fv = $this->importFile($href);
+                            $domNode = $node->getNode(0);
+                            $domNode->setAttribute('href', $resolver->resolve(['/download_file', 'view', $fv->getFileUUID()]));
+                        } catch (ImportException $exception) {
+                            $logger->warning(sprintf('Failed to import file %s (reason: %s)', $src, $exception->getMessage()));
+                        }
                     }
                 }
             });

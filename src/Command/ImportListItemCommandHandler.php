@@ -2,7 +2,9 @@
 
 namespace Macareux\ContentImporter\Command;
 
+use Concrete\Core\File\Import\ImportException;
 use Concrete\Core\File\Service\File as FileService;
+use Concrete\Core\Logging\LoggerFactory;
 use Concrete\Core\Page\Page;
 use Concrete\Core\Page\Template;
 use Concrete\Core\Page\Type\Type;
@@ -31,8 +33,16 @@ class ImportListItemCommandHandler
             if ($fileHelper->getExtension($link) === 'pdf') {
                 $this->setDocumentRoot($command->getDocumentRoot());
                 $this->setFolderNodeID($command->getFolderID());
-                $fv = $this->importFile($link);
-                $page->setAttribute($command->getFileHandle(), $fv->getFile());
+                $app = Application::getFacadeApplication();
+                /** @var LoggerFactory $loggerFactory */
+                $loggerFactory = $app->make(LoggerFactory::class);
+                $logger = $loggerFactory->createLogger('importer');
+                try {
+                    $fv = $this->importFile($link);
+                    $page->setAttribute($command->getFileHandle(), $fv->getFile());
+                } catch (ImportException $exception) {
+                    $logger->warning(sprintf('Failed to import file %s (reason: %s)', $link, $exception->getMessage()));
+                }
             } else {
                 $page->setAttribute($command->getExternalUrlHandle(), $link);
             }

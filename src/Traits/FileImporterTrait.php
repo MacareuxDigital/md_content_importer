@@ -55,6 +55,12 @@ trait FileImporterTrait
         $this->documentRoot = $documentRoot;
     }
 
+    /**
+     * @param $file
+     * @return Version
+     * @throws \Concrete\Core\File\Import\ImportException
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
     public function importFile($file): Version
     {
         if ($this->getDocumentRoot()) {
