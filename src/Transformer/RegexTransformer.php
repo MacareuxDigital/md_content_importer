@@ -71,7 +71,12 @@ class RegexTransformer implements TransformerInterface
 
     public function transform(string $input): string
     {
-        return preg_replace($this->getPattern(), $this->getReplacement(), $input);
+        $replaced = preg_replace($this->getPattern(), $this->getReplacement(), $input);
+        if ($replaced) {
+            return $replaced;
+        }
+
+        return $input;
     }
 
     public function renderForm(): void

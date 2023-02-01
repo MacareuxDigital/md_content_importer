@@ -102,7 +102,7 @@ class Crawler
      */
     public function getTextByXPath(string $xpath): string
     {
-        return (string) $this->getCrawlerByXPath($xpath)->text();
+        return (string) $this->getCrawlerByXPath($xpath)->text('', false);
     }
 
     /**
@@ -116,7 +116,7 @@ class Crawler
      */
     public function getTextBySelector(string $selector): string
     {
-        return (string) $this->getCrawlerBySelector($selector)->text();
+        return (string) $this->getCrawlerBySelector($selector)->text('', false);
     }
 
     /**
