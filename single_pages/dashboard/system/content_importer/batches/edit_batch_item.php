@@ -18,6 +18,38 @@ if ($batchItem->getFilterType() !== BatchItem::TYPE_FILENAME) {
     $filter = $batchItem->getSelector();
 }
 ?>
+
+<div class="ccm-dashboard-header-buttons">
+    <button data-dialog="delete-item" class="btn btn-danger"><?php echo t("Delete"); ?></button>
+</div>
+<div style="display: none">
+    <div id="ccm-dialog-delete-item" class="ccm-ui">
+        <form method="post" class="form-stacked" action="<?= $view->action('delete_batch_item'); ?>">
+            <?= $token->output('delete_batch_item') ?>
+            <?= $form->hidden('batch_item', $batchItem->getId()) ?>
+            <p><?= t('Are you sure? This action cannot be undone.') ?></p>
+        </form>
+        <div class="dialog-buttons">
+            <button class="btn btn-secondary float-start"
+                    onclick="jQuery.fn.dialog.closeTop()"><?= t('Cancel') ?></button>
+            <button class="btn btn-danger float-end"
+                    onclick="$('#ccm-dialog-delete-item form').submit()"><?= t('Delete') ?></button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('button[data-dialog=delete-item]').on('click', function () {
+            jQuery.fn.dialog.open({
+                element: '#ccm-dialog-delete-item',
+                modal: true,
+                width: 320,
+                title: '<?=t("Delete Batch Item") ?>',
+                height: 'auto'
+            });
+        });
+    });
+</script>
 <form method="post" action="<?= $view->action('submit_batch_item') ?>" id="batch-item-form">
     <?php $token->output('submit_batch_item') ?>
     <?= $form->hidden('batch', $batchItem->getBatch()->getId()) ?>

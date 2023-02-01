@@ -347,6 +347,33 @@ class Batches extends DashboardPageController
         }
     }
 
+    public function delete_batch_item()
+    {
+        if (!$this->token->validate('delete_batch_item')) {
+            $this->error->add($this->token->getErrorMessage());
+        }
+
+        /** @var BatchItem $batchItem */
+        $batchItem = $this->getEntry(BatchItem::class, $this->post('batch_item'));
+        if (!$batchItem) {
+            $this->error->add(t('Invalid Batch Item.'));
+        }
+
+        if (!$this->error->has() && isset($batchItem) && $batchItem) {
+            $batch = $batchItem->getBatch();
+            $batch->getBatchItems()->removeElement($batchItem);
+            $this->entityManager->remove($batchItem);
+            $this->entityManager->persist($batch);
+            $this->entityManager->flush();
+
+            $this->flash('success', t('Batch Item removed successfully.'));
+
+            return $this->buildRedirect($this->action('edit_batch', $batch->getId()));
+        }
+
+        $this->view();
+    }
+
     public function add_transformer($id)
     {
         /** @var BatchItem $batchItem */
@@ -509,7 +536,7 @@ class Batches extends DashboardPageController
                     $error = $transformer->validateRequest($this->getRequest());
                     if (!$error->has()) {
                         $transformer->updateFromRequest($this->getRequest());
-                        $html = $this->post('original');
+                        $html = (string) $this->post('original');
                         $result = $transformer->transform($html);
                         $response->setResponse($result);
                     } else {
