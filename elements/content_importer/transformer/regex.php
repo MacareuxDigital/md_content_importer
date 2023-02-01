@@ -7,7 +7,7 @@ defined('C5_EXECUTE') or die("Access Denied.");
 ?>
 <div class="form-group">
     <?= $form->label('pattern', t('The pattern to search for.')) ?>
-    <?= $form->text('pattern', $pattern, ['placeholder' => '/(<h1.*>)(.*)(<\/h1>)/uis']) ?>
+    <?= $form->text('pattern', $pattern, ['placeholder' => h('/<p class="some-class"(.*)>((.|\n)*?)<\/p>/ui')]) ?>
 </div>
 <div class="form-group">
     <?= $form->label('replacement', t('The string to replace.')) ?>
