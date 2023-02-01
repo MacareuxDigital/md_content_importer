@@ -93,7 +93,7 @@ class ImageFileContentTransformer implements TransformerInterface
         $crawler = new Crawler($input);
 
         $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver, $canonical, $logger) {
-            $src = $node->attr('src');
+            $src = urldecode($node->attr('src'));
             if ($src && strpos($src, (string) $canonical->getHost()) === false) {
                 try {
                     $fv = $this->importFile($src);

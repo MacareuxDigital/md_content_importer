@@ -57,7 +57,7 @@ class ImageFileAttributeTransformer implements TransformerInterface
         $loggerFactory = $app->make(LoggerFactory::class);
         $logger = $loggerFactory->createLogger('importer');
         try {
-            $fv = $this->importFile($input);
+            $fv = $this->importFile(urldecode($input));
             return 'fid:' . $fv->getFileID();
         } catch (ImportException $exception) {
             $logger->warning(sprintf('Failed to import file %s (reason: %s)', $input, $exception->getMessage()));
