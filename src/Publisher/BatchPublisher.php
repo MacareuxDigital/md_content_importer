@@ -21,6 +21,7 @@ use Macareux\ContentImporter\Entity\Batch;
 use Macareux\ContentImporter\Entity\BatchItem;
 use Macareux\ContentImporter\Entity\ImportBatchLog;
 use Macareux\ContentImporter\Http\Crawler;
+use Macareux\ContentImporter\Publisher\Block\BlockPublisherManager;
 use Psr\Log\LoggerInterface;
 
 class BatchPublisher implements ApplicationAwareInterface
@@ -145,9 +146,11 @@ class BatchPublisher implements ApplicationAwareInterface
         try {
             $content = $crawler->getContent($batchItem->getFilterType(), $batchItem->getContentType(), $batchItem->getSelector(), $batchItem->getAttribute());
 
-            foreach ($batchItem->getBatchItemTransformers() as $batchItemTransformer) {
-                $transformer = $batchItemTransformer->getClass();
-                $content = $transformer->transform($content);
+            if ($content) {
+                foreach ($batchItem->getBatchItemTransformers() as $batchItemTransformer) {
+                    $transformer = $batchItemTransformer->getClass();
+                    $content = $transformer->transform($content);
+                }
             }
 
             return $content;
@@ -160,11 +163,11 @@ class BatchPublisher implements ApplicationAwareInterface
     protected function createBlockRequest(BlockType $blockType, string $content): array
     {
         $data = [];
-        switch ($blockType->getBlockTypeHandle()) {
-            case 'content':
-            default:
-                $data['content'] = $content;
-                break;
+        /** @var BlockPublisherManager $manager */
+        $manager = $this->app->make(BlockPublisherManager::class);
+        $publishers = $manager->getPublishers();
+        foreach ($publishers as $publisher) {
+            $data = $publisher->publish($blockType, $content, $data);
         }
 
         return $data;
