@@ -19,6 +19,7 @@ class TransformerServiceProvider extends ServiceProvider
             $manager->registerTransformer(new ImageFileAttributeTransformer());
             $manager->registerTransformer(new ImageFileContentTransformer());
             $manager->registerTransformer(new DateTimeTransformer());
+            $manager->registerTransformer(new UrlifyTransformer());
 
             return $manager;
         });
