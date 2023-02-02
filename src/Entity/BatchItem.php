@@ -19,6 +19,8 @@ class BatchItem
 
     public const TYPE_FILENAME = 3;
 
+    public const TYPE_FILEPATH = 4;
+
     public const CONTENT_HTML = 10;
 
     public const CONTENT_TEXT = 20;

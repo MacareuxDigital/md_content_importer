@@ -14,7 +14,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
 /** @var BatchItem $batchItem */
 /** @var \Concrete\Core\Page\Type\Composer\FormLayoutSetControl $formLayoutSetControl */
 $filter = '';
-if ($batchItem->getFilterType() !== BatchItem::TYPE_FILENAME) {
+if ($batchItem->getFilterType() !== BatchItem::TYPE_FILENAME && $batchItem->getFilterType() !== BatchItem::TYPE_FILEPATH) {
     $filter = $batchItem->getSelector();
 }
 ?>
@@ -69,9 +69,13 @@ if ($batchItem->getFilterType() !== BatchItem::TYPE_FILENAME) {
             <?= $form->radio('filterType', BatchItem::TYPE_FILENAME, $batchItem->getFilterType() === BatchItem::TYPE_FILENAME) ?>
             <?= $form->label('filterType3', t('File Name')) ?>
         </div>
+        <div class="form-check">
+            <?= $form->radio('filterType', BatchItem::TYPE_FILEPATH, $batchItem->getFilterType() === BatchItem::TYPE_FILEPATH) ?>
+            <?= $form->label('filterType4', t('File Path')) ?>
+        </div>
         <?php
         $options = [];
-        if ($batchItem->getFilterType() === BatchItem::TYPE_FILENAME) {
+        if ($batchItem->getFilterType() === BatchItem::TYPE_FILENAME || $batchItem->getFilterType() === BatchItem::TYPE_FILEPATH) {
             $options['style'] = 'display: none';
         }
         echo $form->text('filter', $filter, $options);

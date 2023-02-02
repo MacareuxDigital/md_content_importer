@@ -5,6 +5,7 @@ namespace Macareux\ContentImporter\Traits;
 use Concrete\Core\Entity\File\Version;
 use Concrete\Core\File\Filesystem;
 use Concrete\Core\File\Import\FileImporter;
+use Concrete\Core\File\Import\ImportException;
 use Concrete\Core\File\Import\ImportOptions;
 use Concrete\Core\File\Service\File;
 use Concrete\Core\File\Service\VolatileDirectory;
@@ -70,11 +71,16 @@ trait FileImporterTrait
         $app = Application::getFacadeApplication();
         /** @var File $fileHelper */
         $fileHelper = $app->make('helper/file');
+        $fileContent = $fileHelper->getContents($file);
+        if (!$fileContent) {
+            throw ImportException::fromErrorCode(ImportException::E_FILE_INVALID);
+        }
+
         $filename = $fileHelper->splitFilename($file);
         /** @var VolatileDirectory $volatileDirectory */
         $volatileDirectory = $app->make(VolatileDirectory::class);
         $fullFilename = $volatileDirectory->getPath() . '/' . $filename[1] . '.' . $filename[2];
-        $fileHelper->append($fullFilename, $fileHelper->getContents($file));
+        $fileHelper->append($fullFilename, $fileContent);
 
         /** @var FileImporter $importer */
         $importer = $app->make(FileImporter::class);
@@ -108,7 +114,7 @@ trait FileImporterTrait
             foreach ($nodes as $node) {
                 /** @var FileFolder $treeNodeObject */
                 $treeNodeObject = $node['treeNodeObject'];
-                $folders[$treeNodeObject->getTreeNodeID()] = $treeNodeObject->getTreeNodeName();
+                $folders[$treeNodeObject->getTreeNodeID()] = $treeNodeObject->getTreeNodeDisplayPath();
             }
         }
 

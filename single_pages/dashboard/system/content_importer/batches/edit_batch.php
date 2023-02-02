@@ -75,6 +75,9 @@ foreach ($formLayoutSets as $formLayoutSet) {
                             if ($batchItem->getFilterType() === BatchItem::TYPE_FILENAME) {
                                 echo t('Get filename');
                             }
+                            if ($batchItem->getFilterType() === BatchItem::TYPE_FILEPATH) {
+                                echo t('Get filepath');
+                            }
                             ?>
                             <div class="btn-group float-end" role="group" aria-label="<?= t('Selector Actions') ?>">
                                 <a href="<?= $view->action('edit_batch_item', $batchItem->getId()) ?>"

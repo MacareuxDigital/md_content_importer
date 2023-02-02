@@ -4,6 +4,8 @@ namespace Macareux\ContentImporter\Http;
 
 use Concrete\Core\Cache\Level\ExpensiveCache;
 use Concrete\Core\File\Service\File;
+use League\Url\Components\Path;
+use League\Url\Url;
 use Macareux\ContentImporter\Entity\BatchItem;
 use Symfony\Component\CssSelector\Exception\SyntaxErrorException;
 use Symfony\Component\DomCrawler\Crawler as SymfonyCrawler;
@@ -62,6 +64,9 @@ class Crawler
         }
         if ($filterType === BatchItem::TYPE_FILENAME) {
             return $this->getFilename();
+        }
+        if ($filterType === BatchItem::TYPE_FILEPATH) {
+            return $this->getFilepath();
         }
 
         return '';
@@ -149,7 +154,21 @@ class Crawler
 
     public function getFilename(): string
     {
-        return (string) $this->service->splitFilename($this->sourcePath)[1];
+        $path = new Path($this->getFilepath());
+        $segments = $path->toArray();
+        $segments = array_reverse($segments);
+        foreach ($segments as $segment) {
+            if (strpos($segment, 'index.') !== 0) {
+                return (string) $this->service->splitFilename($segment)[1];
+            }
+        }
+
+        return '';
+    }
+
+    public function getFilepath(): string
+    {
+        return parse_url($this->sourcePath, PHP_URL_PATH);
     }
 
     protected function getCrawlerByXPath(string $xpath)

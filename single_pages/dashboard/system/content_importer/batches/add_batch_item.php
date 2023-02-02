@@ -32,6 +32,10 @@ defined('C5_EXECUTE') or die('Access Denied.');
             <?= $form->radio('filterType', BatchItem::TYPE_FILENAME) ?>
             <?= $form->label('filterType3', t('File Name')) ?>
         </div>
+        <div class="form-check">
+            <?= $form->radio('filterType', BatchItem::TYPE_FILEPATH) ?>
+            <?= $form->label('filterType4', t('File Path')) ?>
+        </div>
         <?= $form->text('filter') ?>
     </div>
     <div class="form-group" id="content-type-section">
@@ -81,7 +85,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
             })
         })
         $('[name=filterType]').on('change', function () {
-            if (this.value === '3') {
+            if (this.value === '3' || this.value === '4') {
                 $('#filter').hide()
                 $('#content-type-section').hide()
             } else {
