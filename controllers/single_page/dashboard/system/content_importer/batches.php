@@ -212,7 +212,7 @@ class Batches extends DashboardPageController
                     $this->set('pageType', $pageType);
                     $this->set('batch', $batch);
                     $this->set('token', $this->app->make('token'));
-                    $this->set('pageTitle', t('Edit Batch'));
+                    $this->set('pageTitle', t('Edit %s Batch', $batch->getName()));
                     $this->render('/dashboard/system/content_importer/batches/edit_batch');
                 } else {
                     $this->error->add(t('You need permission to add this page type.'));
