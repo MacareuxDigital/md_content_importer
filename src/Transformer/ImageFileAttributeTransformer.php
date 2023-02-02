@@ -8,6 +8,7 @@ use Concrete\Core\Http\Request;
 use Concrete\Core\Logging\LoggerFactory;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
+use Concrete\Core\Url\UrlImmutable;
 use Macareux\ContentImporter\Traits\ImageFileTransformerTrait;
 
 /**
@@ -56,13 +57,23 @@ class ImageFileAttributeTransformer implements TransformerInterface
         /** @var LoggerFactory $loggerFactory */
         $loggerFactory = $app->make(LoggerFactory::class);
         $logger = $loggerFactory->createLogger('importer');
-        try {
-            $fv = $this->importFile(urldecode($input));
-            return 'fid:' . $fv->getFileID();
-        } catch (ImportException $exception) {
-            $logger->warning(sprintf('Failed to import file %s (reason: %s)', $input, $exception->getMessage()));
+        /* @var \Concrete\Core\Entity\Site\Site $site */
+        $site = $app->make('site')->getSite();
+        $siteUrl = $site->getSiteCanonicalURL();
+        if ($siteUrl) {
+            $canonical = UrlImmutable::createFromUrl($siteUrl);
+        } else {
+            $canonical = UrlImmutable::createFromUrl(Request::getInstance()->getUri());
+        }
+        if ($input && strpos($input, (string) $canonical->getHost()) === false) {
+            try {
+                $fv = $this->importFile(urldecode($input));
+                return 'fid:' . $fv->getFileID();
+            } catch (ImportException $exception) {
+                $logger->warning(sprintf('Failed to import file %s (reason: %s)', $input, $exception->getMessage()));
+            }
         }
 
-        return $input;
+        return '';
     }
 }

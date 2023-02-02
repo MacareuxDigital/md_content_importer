@@ -65,7 +65,7 @@ trait FileImporterTrait
     public function importFile($file): Version
     {
         if ($this->getDocumentRoot()) {
-            $file = $this->getDocumentRoot() . $file;
+            $file = $this->getDocumentRoot() . parse_url($file, PHP_URL_PATH);
         }
 
         $app = Application::getFacadeApplication();

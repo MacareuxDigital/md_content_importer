@@ -9,7 +9,7 @@ trait EntityTrait
 {
     public function getAll(string $class): array
     {
-        return $this->getRepository($class)->findAll();
+        return $this->getRepository($class)->findBy([], ['id' => 'DESC']);
     }
 
     public function getEntry(string $class, int $id)
