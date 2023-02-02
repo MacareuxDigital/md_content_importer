@@ -42,15 +42,15 @@ defined('C5_EXECUTE') or die('Access Denied.');
         <?= $form->label('content', t('Content Type')) ?>
         <div class="form-check">
             <?= $form->radio('contentType', BatchItem::CONTENT_HTML, true) ?>
-            <?= $form->label('contentType4', t('Inner HTML')) ?>
+            <?= $form->label('contentType5', t('Inner HTML')) ?>
         </div>
         <div class="form-check">
             <?= $form->radio('contentType', BatchItem::CONTENT_TEXT) ?>
-            <?= $form->label('contentType5', t('Inner Text')) ?>
+            <?= $form->label('contentType6', t('Inner Text')) ?>
         </div>
         <div class="form-check">
             <?= $form->radio('contentType', BatchItem::CONTENT_ATTRIBUTE) ?>
-            <?= $form->label('contentType6', t('Attribute')) ?>
+            <?= $form->label('contentType7', t('Attribute')) ?>
         </div>
         <?= $form->text('attribute', ['style' => 'display: none']) ?>
     </div>
