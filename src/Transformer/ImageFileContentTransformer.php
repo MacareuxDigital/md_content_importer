@@ -120,7 +120,7 @@ class ImageFileContentTransformer implements TransformerInterface
                             $domNode = $node->getNode(0);
                             $domNode->setAttribute('href', $resolver->resolve(['/download_file', 'view', $fv->getFileUUID()]));
                         } catch (ImportException $exception) {
-                            $logger->warning(sprintf('Failed to import file %s (reason: %s)', $src, $exception->getMessage()));
+                            $logger->warning(sprintf('Failed to import file %s (reason: %s)', $href, $exception->getMessage()));
                         }
                     }
                 }

@@ -203,4 +203,18 @@ class BatchItem
     {
         return $this->batchItemTransformers;
     }
+
+    public function __clone()
+    {
+        if ($this->id) {
+            $this->id = null;
+            $newBatchItemTransformers = new ArrayCollection();
+            foreach ($this->getBatchItemTransformers() as $batchItemTransformer) {
+                $newBatchItemTransformer = clone $batchItemTransformer;
+                $newBatchItemTransformer->setBatchItem($this);
+                $newBatchItemTransformers->add($newBatchItemTransformer);
+            }
+            $this->batchItemTransformers = $newBatchItemTransformers;
+        }
+    }
 }

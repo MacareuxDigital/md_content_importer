@@ -14,6 +14,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
             <td style="text-align: right">
                 <a class="btn btn-secondary btn-sm" href="<?= $view->action('edit_batch_basic', $batch->getId()) ?>"><?= t('Source & Publish Target') ?></a>
                 <a class="btn btn-secondary btn-sm" href="<?= $view->action('edit_batch', $batch->getId()) ?>"><?= t('Selectors & Transformers') ?></a>
+                <a class="btn btn-secondary btn-sm" href="<?= $view->action('copy_batch', $batch->getId()) ?>"><?= t('Copy') ?></a>
                 <button class="btn btn-primary btn-sm" type="button" data-batch-id="<?= $batch->getId() ?>" data-dialog="import-batch"><?= t('Import') ?></button>
                 <button class="btn btn-danger btn-sm" type="button" data-batch-id="<?= $batch->getId() ?>" data-dialog="delete-batch"><?= t('Delete') ?></button>
             </td>
@@ -39,7 +40,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
     <div id="ccm-dialog-delete-batch" class="ccm-ui">
         <form method="post" class="form-stacked" action="<?= $view->action('delete_batch'); ?>">
             <?= $token->output('delete_batch') ?>
-            <?= $form->hidden('batch_id') ?>
+            <?= $form->hidden('delete_batch_id') ?>
             <p><?= t('Are you sure? This action cannot be undone.') ?></p>
         </form>
         <div class="dialog-buttons">
@@ -74,7 +75,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
             return false;
         });
         $('button[data-dialog=delete-batch]').on('click', function () {
-            $('#batch_id').val($(this).data('batch-id'));
+            $('#delete_batch_id').val($(this).data('batch-id'));
             jQuery.fn.dialog.open({
                 element: '#ccm-dialog-delete-batch',
                 modal: true,

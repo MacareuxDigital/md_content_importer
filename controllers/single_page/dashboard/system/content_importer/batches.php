@@ -175,7 +175,7 @@ class Batches extends DashboardPageController
             $this->error->add($this->token->getErrorMessage());
         }
 
-        $batch = $this->getEntry(Batch::class, $this->post('batch_id'));
+        $batch = $this->getEntry(Batch::class, (int) $this->post('delete_batch_id'));
         if (!$batch) {
             $this->error->add(t('Invalid Batch.'));
         }
@@ -185,6 +185,28 @@ class Batches extends DashboardPageController
             $this->entityManager->flush();
 
             $this->flash('success', t('Batch removed successfully.'));
+
+            return $this->buildRedirect($this->action('view'));
+        }
+
+        $this->view();
+    }
+
+    public function copy_batch($id)
+    {
+        /** @var Batch $batch */
+        $batch = $this->getEntry(Batch::class, $id);
+        if (!$batch) {
+            $this->error->add(t('Invalid Batch.'));
+        }
+
+        if (!$this->error->has()) {
+            $newBatch = clone $batch;
+            $newBatch->setName($batch->getName() . ' ' . t('Copy'));
+            $this->entityManager->persist($newBatch);
+            $this->entityManager->flush();
+
+            $this->flash('success', t('Batch copied successfully.'));
 
             return $this->buildRedirect($this->action('view'));
         }
