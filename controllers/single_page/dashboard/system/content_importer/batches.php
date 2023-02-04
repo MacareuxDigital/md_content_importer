@@ -4,6 +4,7 @@ namespace Concrete\Package\MdContentImporter\Controller\SinglePage\Dashboard\Sys
 
 use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Http\ResponseFactoryInterface;
+use Concrete\Core\Logging\LoggerFactory;
 use Concrete\Core\Page\Controller\DashboardPageController;
 use Concrete\Core\Page\Template;
 use Concrete\Core\Page\Type\Composer\FormLayoutSet;
@@ -13,8 +14,10 @@ use Macareux\ContentImporter\Command\ImportBatchCommand;
 use Macareux\ContentImporter\Entity\Batch;
 use Macareux\ContentImporter\Entity\BatchItem;
 use Macareux\ContentImporter\Entity\BatchItemTransformer;
+use Macareux\ContentImporter\Entity\ImportBatchLog;
 use Macareux\ContentImporter\Http\Crawler;
 use Macareux\ContentImporter\Http\PreviewResponse;
+use Macareux\ContentImporter\Repository\ImportBatchLogRepository;
 use Macareux\ContentImporter\Traits\EntityTrait;
 use Macareux\ContentImporter\Traits\PermissionCheckerTrait;
 use Macareux\ContentImporter\Transformer\TransformerManager;
@@ -642,12 +645,29 @@ class Batches extends DashboardPageController
         }
 
         if (!$this->error->has()) {
-            $commandBatch = \Concrete\Core\Command\Batch\Batch::create(t('Import pages'), function () use ($batch) {
+            $skipImported = $this->post('skip_imported');
+            /** @var ImportBatchLogRepository $logRepository */
+            $logRepository = $this->entityManager->getRepository(ImportBatchLog::class);
+            /** @var LoggerFactory $loggerFactory */
+            $loggerFactory = $this->app->make(LoggerFactory::class);
+            $logger = $loggerFactory->createLogger('content_importer');
+            $commandBatch = \Concrete\Core\Command\Batch\Batch::create(t('Import pages'), function () use ($batch, $logRepository, $skipImported, $logger) {
                 foreach ($batch->getSourcePathArray() as $sourcePath) {
-                    $command = new ImportBatchCommand();
-                    $command->setBatchID($batch->getId());
-                    $command->setSourcePath($sourcePath);
-                    yield $command;
+                    $shouldSkip = false;
+                    if ($skipImported) {
+                        /** @var ImportBatchLog $log */
+                        $log = $logRepository->findOneByOriginal($sourcePath);
+                        if ($log) {
+                            $shouldSkip = true;
+                            $logger->info(t('Importing %s skipped. Already imported at %s.', $sourcePath, $log->getImportedPage()->getCollectionLink()));
+                        }
+                    }
+                    if (!$shouldSkip) {
+                        $command = new ImportBatchCommand();
+                        $command->setBatchID($batch->getId());
+                        $command->setSourcePath($sourcePath);
+                        yield $command;
+                    }
                 }
             });
 

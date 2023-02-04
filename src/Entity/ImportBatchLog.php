@@ -6,7 +6,7 @@ use Concrete\Core\Page\Page;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Macareux\ContentImporter\Repository\ImportBatchLogRepository")
  * @ORM\Table(name="mdContentImporterImportLog")
  */
 class ImportBatchLog

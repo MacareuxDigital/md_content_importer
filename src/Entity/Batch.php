@@ -126,7 +126,7 @@ class Batch
             }
         }
 
-        return $sourcePaths;
+        return array_unique($sourcePaths);
     }
 
     /**

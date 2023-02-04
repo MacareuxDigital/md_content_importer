@@ -12,11 +12,16 @@ defined('C5_EXECUTE') or die('Access Denied.');
         <tr>
             <th><?= h($batch->getName()) ?></th>
             <td style="text-align: right">
-                <a class="btn btn-secondary btn-sm" href="<?= $view->action('edit_batch_basic', $batch->getId()) ?>"><?= t('Source & Publish Target') ?></a>
-                <a class="btn btn-secondary btn-sm" href="<?= $view->action('edit_batch', $batch->getId()) ?>"><?= t('Selectors & Transformers') ?></a>
-                <a class="btn btn-secondary btn-sm" href="<?= $view->action('copy_batch', $batch->getId()) ?>"><?= t('Copy') ?></a>
-                <button class="btn btn-primary btn-sm" type="button" data-batch-id="<?= $batch->getId() ?>" data-dialog="import-batch"><?= t('Import') ?></button>
-                <button class="btn btn-danger btn-sm" type="button" data-batch-id="<?= $batch->getId() ?>" data-dialog="delete-batch"><?= t('Delete') ?></button>
+                <a class="btn btn-secondary btn-sm"
+                   href="<?= $view->action('edit_batch_basic', $batch->getId()) ?>"><?= t('Source & Publish Target') ?></a>
+                <a class="btn btn-secondary btn-sm"
+                   href="<?= $view->action('edit_batch', $batch->getId()) ?>"><?= t('Selectors & Transformers') ?></a>
+                <a class="btn btn-secondary btn-sm"
+                   href="<?= $view->action('copy_batch', $batch->getId()) ?>"><?= t('Copy') ?></a>
+                <button class="btn btn-primary btn-sm" type="button" data-batch-id="<?= $batch->getId() ?>"
+                        data-dialog="import-batch"><?= t('Import') ?></button>
+                <button class="btn btn-danger btn-sm" type="button" data-batch-id="<?= $batch->getId() ?>"
+                        data-dialog="delete-batch"><?= t('Delete') ?></button>
             </td>
         </tr>
     <?php } ?>
@@ -29,6 +34,12 @@ defined('C5_EXECUTE') or die('Access Denied.');
             <?= $token->output('import_batch') ?>
             <?= $form->hidden('batch_id') ?>
             <p><?= t('Are you sure? This action cannot be undone.') ?></p>
+            <div class="form-check">
+                <label>
+                    <?= $form->checkbox('skip_imported', 1) ?>
+                    <?= t('Skip already imported page.') ?>
+                </label>
+            </div>
         </form>
         <div class="dialog-buttons">
             <button class="btn btn-secondary float-start"
@@ -69,7 +80,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
                 data: $(this).serializeArray(),
                 title: <?= json_encode(t('Import Pages')) ?>,
                 onComplete: function () {
-                    window.location.href = <?=json_encode((string) $this->action('import_completed')) ?>;
+                    window.location.href = <?=json_encode((string)$this->action('import_completed')) ?>;
                 }
             });
             return false;
