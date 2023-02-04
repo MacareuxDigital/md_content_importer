@@ -155,7 +155,7 @@ class BatchPublisher implements ApplicationAwareInterface
 
             return $content;
         } catch (\InvalidArgumentException $exception) {
-            $this->logger->warning(t('Could not get content for %s', $batchItem->getPtComposerFormLayoutSetControl()->getPageTypeComposerControlDisplayLabel()));
+            $this->logger->warning(t('Could not get content for %s from %s', $batchItem->getPtComposerFormLayoutSetControl()->getPageTypeComposerControlDisplayLabel(), $sourcePath));
             return '';
         }
     }
