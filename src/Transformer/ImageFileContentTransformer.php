@@ -82,7 +82,7 @@ class ImageFileContentTransformer implements TransformerInterface
         $loggerFactory = $app->make(LoggerFactory::class);
         $logger = $loggerFactory->createLogger('importer');
 
-        /* @var \Concrete\Core\Entity\Site\Site $site */
+        // @var \Concrete\Core\Entity\Site\Site $site
         $site = $app->make('site')->getSite();
         $siteUrl = $site->getSiteCanonicalURL();
         if ($siteUrl) {

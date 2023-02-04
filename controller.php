@@ -1,4 +1,6 @@
-<?php /** @noinspection AutoloadingIssuesInspection */
+<?php
+
+/** @noinspection AutoloadingIssuesInspection */
 
 namespace Concrete\Package\MdContentImporter;
 
@@ -11,8 +13,11 @@ use Macareux\ContentImporter\Transformer\TransformerServiceProvider;
 class Controller extends Package
 {
     protected $appVersionRequired = '9.0.0';
+
     protected $pkgHandle = 'md_content_importer';
-    protected $pkgVersion = '0.4.0';
+
+    protected $pkgVersion = '0.6.0';
+
     protected $pkgAutoloaderRegistries = [
         'src' => '\Macareux\ContentImporter',
     ];
@@ -39,7 +44,7 @@ class Controller extends Package
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function upgrade()
     {

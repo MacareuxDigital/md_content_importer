@@ -2,7 +2,6 @@
 
 namespace Macareux\ContentImporter\Repository;
 
-use Concrete\Core\Page\Page;
 use Doctrine\ORM\EntityRepository;
 use Macareux\ContentImporter\Entity\ImportBatchLog;
 

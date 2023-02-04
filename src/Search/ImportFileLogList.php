@@ -8,10 +8,10 @@ use Concrete\Core\Support\Facade\Application;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use Macareux\ContentImporter\Entity\ImportBatchLog;
+use Macareux\ContentImporter\Entity\ImportFileLog;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 
-class ImportBatchLogList extends EntityItemList implements PaginationProviderInterface
+class ImportFileLogList extends EntityItemList implements PaginationProviderInterface
 {
     /**
      * {@inheritdoc}
@@ -23,7 +23,7 @@ class ImportBatchLogList extends EntityItemList implements PaginationProviderInt
 
     public function createQuery()
     {
-        $this->query->select('l')->from(ImportBatchLog::class, 'l');
+        $this->query->select('l')->from(ImportFileLog::class, 'l');
     }
 
     public function getResult($mixed)

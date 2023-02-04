@@ -3,7 +3,6 @@
 namespace Macareux\ContentImporter\Command;
 
 use Concrete\Core\Foundation\Command\Command;
-use Macareux\ContentImporter\Entity\Batch;
 
 class ImportBatchCommand extends Command
 {

@@ -84,6 +84,20 @@ class BatchItem
         $this->batchItemTransformers = new ArrayCollection();
     }
 
+    public function __clone()
+    {
+        if ($this->id) {
+            $this->id = null;
+            $newBatchItemTransformers = new ArrayCollection();
+            foreach ($this->getBatchItemTransformers() as $batchItemTransformer) {
+                $newBatchItemTransformer = clone $batchItemTransformer;
+                $newBatchItemTransformer->setBatchItem($this);
+                $newBatchItemTransformers->add($newBatchItemTransformer);
+            }
+            $this->batchItemTransformers = $newBatchItemTransformers;
+        }
+    }
+
     /**
      * @return int|null
      */
@@ -202,19 +216,5 @@ class BatchItem
     public function getBatchItemTransformers()
     {
         return $this->batchItemTransformers;
-    }
-
-    public function __clone()
-    {
-        if ($this->id) {
-            $this->id = null;
-            $newBatchItemTransformers = new ArrayCollection();
-            foreach ($this->getBatchItemTransformers() as $batchItemTransformer) {
-                $newBatchItemTransformer = clone $batchItemTransformer;
-                $newBatchItemTransformer->setBatchItem($this);
-                $newBatchItemTransformers->add($newBatchItemTransformer);
-            }
-            $this->batchItemTransformers = $newBatchItemTransformers;
-        }
     }
 }

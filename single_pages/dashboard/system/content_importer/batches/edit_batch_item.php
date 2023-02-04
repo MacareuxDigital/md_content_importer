@@ -20,7 +20,7 @@ if ($batchItem->getFilterType() !== BatchItem::TYPE_FILENAME && $batchItem->getF
 ?>
 
 <div class="ccm-dashboard-header-buttons">
-    <button data-dialog="delete-item" class="btn btn-danger"><?php echo t("Delete"); ?></button>
+    <button data-dialog="delete-item" class="btn btn-danger"><?php echo t('Delete'); ?></button>
 </div>
 <div style="display: none">
     <div id="ccm-dialog-delete-item" class="ccm-ui">
@@ -44,7 +44,7 @@ if ($batchItem->getFilterType() !== BatchItem::TYPE_FILENAME && $batchItem->getF
                 element: '#ccm-dialog-delete-item',
                 modal: true,
                 width: 320,
-                title: '<?=t("Delete Batch Item") ?>',
+                title: '<?=t('Delete Batch Item') ?>',
                 height: 'auto'
             });
         });

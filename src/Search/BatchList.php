@@ -8,10 +8,10 @@ use Concrete\Core\Support\Facade\Application;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use Macareux\ContentImporter\Entity\ImportBatchLog;
+use Macareux\ContentImporter\Entity\Batch;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 
-class ImportBatchLogList extends EntityItemList implements PaginationProviderInterface
+class BatchList extends EntityItemList implements PaginationProviderInterface
 {
     /**
      * {@inheritdoc}
@@ -23,7 +23,7 @@ class ImportBatchLogList extends EntityItemList implements PaginationProviderInt
 
     public function createQuery()
     {
-        $this->query->select('l')->from(ImportBatchLog::class, 'l');
+        $this->query->select('b')->from(Batch::class, 'b');
     }
 
     public function getResult($mixed)
@@ -37,7 +37,7 @@ class ImportBatchLogList extends EntityItemList implements PaginationProviderInt
     public function getTotalResults()
     {
         $count = 0;
-        $query = $this->query->select('count(distinct l.id)')
+        $query = $this->query->select('count(distinct b.id)')
             ->setMaxResults(1)->resetDQLParts(['groupBy', 'orderBy']);
 
         try {

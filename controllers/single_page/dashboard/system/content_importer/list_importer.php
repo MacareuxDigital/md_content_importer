@@ -1,4 +1,6 @@
-<?php /** @noinspection AutoloadingIssuesInspection */
+<?php
+
+/** @noinspection AutoloadingIssuesInspection */
 
 namespace Concrete\Package\MdContentImporter\Controller\SinglePage\Dashboard\System\ContentImporter;
 
@@ -9,7 +11,6 @@ use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Page\Controller\DashboardPageController;
 use Concrete\Core\Page\Template;
 use Concrete\Core\Page\Type\Type;
-use Macareux\ContentImporter\Command\ImportBatchCommand;
 use Macareux\ContentImporter\Command\ImportListItemCommand;
 use Macareux\ContentImporter\ListImporter\PaginationLink;
 use Macareux\ContentImporter\Traits\FileImporterTrait;
@@ -141,6 +142,37 @@ class ListImporter extends DashboardPageController
 
     /**
      * @param Crawler $crawler
+     *
+     * @return array|PaginationLink[]
+     */
+    public function parsePagination(Crawler $crawler): array
+    {
+        $url = $this->post('url');
+        $document_root = $this->post('root');
+        $pagination_selector = $this->post('pagination_selector');
+
+        /** @var PaginationLink[] $links */
+        $links = $crawler->filter($pagination_selector)
+            ->filter('a')->each(function (Crawler $node, $i) use ($document_root) {
+                $link = new PaginationLink();
+                $link->setLink($node->attr('href'));
+                $link->setBaseURL((string) $document_root);
+
+                return $link;
+            });
+
+        foreach ($links as $i => $link) {
+            if ((string) $link->getLink() === $url) {
+                unset($links[$i]);
+            }
+        }
+
+        return $links;
+    }
+
+    /**
+     * @param Crawler $crawler
+     *
      * @return array|ImportListItemCommand[]
      */
     protected function createItems(Crawler $crawler): array
@@ -195,34 +227,5 @@ class ListImporter extends DashboardPageController
         }
 
         return $items;
-    }
-
-    /**
-     * @param Crawler $crawler
-     * @return array|PaginationLink[]
-     */
-    public function parsePagination(Crawler $crawler): array
-    {
-        $url = $this->post('url');
-        $document_root = $this->post('root');
-        $pagination_selector = $this->post('pagination_selector');
-
-        /** @var PaginationLink[] $links */
-        $links = $crawler->filter($pagination_selector)
-            ->filter('a')->each(function (Crawler $node, $i) use ($document_root) {
-            $link = new PaginationLink();
-            $link->setLink($node->attr('href'));
-            $link->setBaseURL((string) $document_root);
-
-            return $link;
-        });
-
-        foreach ($links as $i => $link) {
-            if ((string) $link->getLink() === $url) {
-                unset($links[$i]);
-            }
-        }
-
-        return $links;
     }
 }

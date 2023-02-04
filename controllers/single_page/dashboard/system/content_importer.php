@@ -1,4 +1,6 @@
-<?php /** @noinspection AutoloadingIssuesInspection */
+<?php
+
+/** @noinspection AutoloadingIssuesInspection */
 
 namespace Concrete\Package\MdContentImporter\Controller\SinglePage\Dashboard\System;
 

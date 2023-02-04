@@ -22,7 +22,7 @@ if ($batchItemTransformer) {
     $cancelLink = UrlFacade::to('/dashboard/system/content_importer/batches/edit_batch', $batchItemTransformer->getBatchItem()->getBatch()->getId());
     ?>
     <div class="ccm-dashboard-header-buttons">
-        <button data-dialog="delete-item" class="btn btn-danger"><?php echo t("Delete"); ?></button>
+        <button data-dialog="delete-item" class="btn btn-danger"><?php echo t('Delete'); ?></button>
     </div>
     <div style="display: none">
         <div id="ccm-dialog-delete-item" class="ccm-ui">
@@ -46,7 +46,7 @@ if ($batchItemTransformer) {
                     element: '#ccm-dialog-delete-item',
                     modal: true,
                     width: 320,
-                    title: '<?=t("Delete Transformer") ?>',
+                    title: '<?=t('Delete Transformer') ?>',
                     height: 'auto'
                 });
             });

@@ -4,10 +4,11 @@ namespace Macareux\ContentImporter\Export;
 
 use Doctrine\ORM\EntityManager;
 use League\Csv\Writer;
-use Macareux\ContentImporter\Entity\ImportBatchLog;
+use Macareux\ContentImporter\Entity\ImportFileLog;
 use Macareux\ContentImporter\Search\ImportBatchLogList;
+use Macareux\ContentImporter\Search\ImportFileLogList;
 
-class CsvWriter
+class FileLogCsvWriter
 {
     /**
      * @var Writer The writer we use to output
@@ -42,28 +43,27 @@ class CsvWriter
         }
     }
 
-    private function getEntries(ImportBatchLogList $list)
+    private function getEntries(ImportFileLogList $list)
     {
         foreach ($list->getResults() as $result) {
             yield $result;
         }
     }
 
-    private function getRecord(ImportBatchLog $record)
+    private function getRecord(ImportFileLog $record)
     {
-        $batch = $record->getBatch();
-        $imported = $record->getImportedPage();
-        yield $batch ? $batch->getName() : t('Deleted');
+        $f = $record->getImportedFile();
         yield $record->getOriginal();
-        yield $imported ? $imported->getCollectionPath() : t('Not Found');
+        yield $f ? $f->getFileID() : t('Not Found');
+        yield $f ? $f->getApprovedVersion()->getFileName() : t('Not Found');
         yield $record->getImportDate()->format('Y-m-d H:i:s');
     }
 
     private function getHeaders()
     {
-        yield t('Batch');
         yield t('Original');
-        yield t('Imported');
+        yield t('File ID');
+        yield t('File Name');
         yield t('Import Date');
     }
 }

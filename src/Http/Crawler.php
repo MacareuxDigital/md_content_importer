@@ -5,7 +5,6 @@ namespace Macareux\ContentImporter\Http;
 use Concrete\Core\Cache\Level\ExpensiveCache;
 use Concrete\Core\File\Service\File;
 use League\Url\Components\Path;
-use League\Url\Url;
 use Macareux\ContentImporter\Entity\BatchItem;
 use Symfony\Component\CssSelector\Exception\SyntaxErrorException;
 use Symfony\Component\DomCrawler\Crawler as SymfonyCrawler;

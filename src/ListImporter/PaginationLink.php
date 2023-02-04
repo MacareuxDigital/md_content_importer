@@ -43,6 +43,7 @@ class PaginationLink
                 if (isset($link['query'])) {
                     $baseURL->setQuery(new Query($link['query']));
                 }
+
                 return $baseURL;
             }
         } else {

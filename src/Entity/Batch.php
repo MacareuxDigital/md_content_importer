@@ -72,6 +72,22 @@ class Batch
         $this->batchItems = new ArrayCollection();
     }
 
+    public function __clone()
+    {
+        if ($this->id) {
+            $this->id = null;
+
+            $newBatchItems = new ArrayCollection();
+            foreach ($this->getBatchItems() as $batchItem) {
+                $newBatchItem = clone $batchItem;
+                $newBatchItem->setBatch($this);
+                $newBatchItems->add($newBatchItem);
+            }
+
+            $this->batchItems = $newBatchItems;
+        }
+    }
+
     /**
      * @return int|null
      */
@@ -228,21 +244,5 @@ class Batch
     public function getBatchItems()
     {
         return $this->batchItems;
-    }
-
-    public function __clone()
-    {
-        if ($this->id) {
-            $this->id = null;
-
-            $newBatchItems = new ArrayCollection();
-            foreach ($this->getBatchItems() as $batchItem) {
-                $newBatchItem = clone $batchItem;
-                $newBatchItem->setBatch($this);
-                $newBatchItems->add($newBatchItem);
-            }
-
-            $this->batchItems = $newBatchItems;
-        }
     }
 }

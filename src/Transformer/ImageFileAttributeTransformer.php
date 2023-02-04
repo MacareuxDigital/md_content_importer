@@ -57,7 +57,7 @@ class ImageFileAttributeTransformer implements TransformerInterface
         /** @var LoggerFactory $loggerFactory */
         $loggerFactory = $app->make(LoggerFactory::class);
         $logger = $loggerFactory->createLogger('importer');
-        /* @var \Concrete\Core\Entity\Site\Site $site */
+        // @var \Concrete\Core\Entity\Site\Site $site
         $site = $app->make('site')->getSite();
         $siteUrl = $site->getSiteCanonicalURL();
         if ($siteUrl) {
@@ -68,6 +68,7 @@ class ImageFileAttributeTransformer implements TransformerInterface
         if ($input && strpos($input, (string) $canonical->getHost()) === false) {
             try {
                 $fv = $this->importFile(urldecode($input));
+
                 return 'fid:' . $fv->getFileID();
             } catch (ImportException $exception) {
                 $logger->warning(sprintf('Failed to import file %s (reason: %s)', $input, $exception->getMessage()));

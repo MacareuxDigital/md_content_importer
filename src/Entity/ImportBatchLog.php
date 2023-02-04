@@ -24,7 +24,7 @@ class ImportBatchLog
      * @ORM\ManyToOne(targetEntity="Batch")
      * @ORM\JoinColumn(name="batch_id", referencedColumnName="id", onDelete="CASCADE")
      */
-    private $batch = null;
+    private $batch;
 
     /**
      * @var \DateTimeImmutable
@@ -128,6 +128,7 @@ class ImportBatchLog
 
     /**
      * @param Page $page
+     *
      * @return void
      */
     public function setImportedPage(Page $page): void

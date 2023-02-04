@@ -2,6 +2,7 @@
 
 namespace Macareux\ContentImporter\Traits;
 
+use Carbon\CarbonImmutable;
 use Concrete\Core\Entity\File\Version;
 use Concrete\Core\File\Filesystem;
 use Concrete\Core\File\Import\FileImporter;
@@ -11,6 +12,9 @@ use Concrete\Core\File\Service\File;
 use Concrete\Core\File\Service\VolatileDirectory;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
+use Doctrine\ORM\EntityManagerInterface;
+use Macareux\ContentImporter\Entity\ImportFileLog;
+use Macareux\ContentImporter\Repository\ImportFileLogRepository;
 
 trait FileImporterTrait
 {
@@ -58,9 +62,11 @@ trait FileImporterTrait
 
     /**
      * @param $file
-     * @return Version
+     *
      * @throws \Concrete\Core\File\Import\ImportException
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     *
+     * @return Version
      */
     public function importFile($file): Version
     {
@@ -69,6 +75,18 @@ trait FileImporterTrait
         }
 
         $app = Application::getFacadeApplication();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $app->make(EntityManagerInterface::class);
+        /** @var ImportFileLogRepository $logRepository */
+        $logRepository = $entityManager->getRepository(ImportFileLog::class);
+        $log = $logRepository->findOneByOriginal($file);
+        if ($log) {
+            $imported = $log->getImportedFile();
+            if ($imported) {
+                return $imported->getApprovedVersion();
+            }
+        }
+
         /** @var File $fileHelper */
         $fileHelper = $app->make('helper/file');
         $fileContent = $fileHelper->getContents($file);
@@ -94,7 +112,15 @@ trait FileImporterTrait
             }
         }
 
-        return $importer->importLocalFile($fullFilename, $filename[1] . '.' . $filename[2], $options);
+        $fv = $importer->importLocalFile($fullFilename, $filename[1] . '.' . $filename[2], $options);
+        $successLog = new ImportFileLog();
+        $successLog->setImportedFID($fv->getFileID());
+        $successLog->setImportDate(CarbonImmutable::now());
+        $successLog->setOriginal($file);
+        $entityManager->persist($successLog);
+        $entityManager->flush();
+
+        return $fv;
     }
 
     private function getFolders(): array

@@ -4,7 +4,9 @@ namespace Macareux\ContentImporter\Publisher\Block;
 
 class BlockPublisherManager
 {
-    /** @var BlockPublisherInterface[] */
+    /**
+     * @var BlockPublisherInterface[]
+     */
     private $publishers = [];
 
     public function registerPublisher(BlockPublisherInterface $blockPublisher)

@@ -44,5 +44,4 @@ class UrlifyTransformer implements TransformerInterface
     public function updateFromRequest(Request $request): void
     {
     }
-
 }

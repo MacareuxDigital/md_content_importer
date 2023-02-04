@@ -1,8 +1,11 @@
-<?php /** @noinspection AutoloadingIssuesInspection */
+<?php
+
+/** @noinspection AutoloadingIssuesInspection */
 
 namespace Concrete\Package\MdContentImporter\Controller\SinglePage\Dashboard\System\ContentImporter;
 
 use Concrete\Core\Filesystem\ElementManager;
+use Concrete\Core\Http\Request;
 use Concrete\Core\Http\ResponseFactoryInterface;
 use Concrete\Core\Logging\LoggerFactory;
 use Concrete\Core\Page\Controller\DashboardPageController;
@@ -10,6 +13,7 @@ use Concrete\Core\Page\Template;
 use Concrete\Core\Page\Type\Composer\FormLayoutSet;
 use Concrete\Core\Page\Type\Composer\FormLayoutSetControl;
 use Concrete\Core\Page\Type\Type;
+use Concrete\Core\Search\Pagination\PaginationFactory;
 use Macareux\ContentImporter\Command\ImportBatchCommand;
 use Macareux\ContentImporter\Entity\Batch;
 use Macareux\ContentImporter\Entity\BatchItem;
@@ -18,6 +22,7 @@ use Macareux\ContentImporter\Entity\ImportBatchLog;
 use Macareux\ContentImporter\Http\Crawler;
 use Macareux\ContentImporter\Http\PreviewResponse;
 use Macareux\ContentImporter\Repository\ImportBatchLogRepository;
+use Macareux\ContentImporter\Search\BatchList;
 use Macareux\ContentImporter\Traits\EntityTrait;
 use Macareux\ContentImporter\Traits\PermissionCheckerTrait;
 use Macareux\ContentImporter\Transformer\TransformerManager;
@@ -26,12 +31,20 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class Batches extends DashboardPageController
 {
     use PermissionCheckerTrait;
+
     use EntityTrait;
 
     public function view()
     {
+        /** @var BatchList $list */
+        $list = $this->app->make(BatchList::class);
+        $list->sortBy('b.id', 'DESC');
+        $list->setItemsPerPage(20);
+        $factory = new PaginationFactory(Request::getInstance());
+        $pagination = $factory->createPaginationObject($list, PaginationFactory::PERMISSIONED_PAGINATION_STYLE_PAGER);
+        $this->set('list', $list);
+        $this->set('pagination', $pagination);
         $this->set('token', $this->app->make('token'));
-        $this->set('batches', $this->getAll(Batch::class));
         $this->set('headerMenu', $this->app->make(ElementManager::class)->get('dashboard/batches/header', 'md_content_importer'));
     }
 
@@ -164,9 +177,9 @@ class Batches extends DashboardPageController
 
             if ($batchID) {
                 return $this->buildRedirect($this->action('view'));
-            } else {
-                return $this->buildRedirect($this->action('edit_batch', $batch->getId()));
             }
+
+            return $this->buildRedirect($this->action('edit_batch', $batch->getId()));
         }
 
         $this->edit_batch_basic($batchID);
@@ -366,10 +379,9 @@ class Batches extends DashboardPageController
             $this->flash('success', t('Batch Item saved successfully.'));
 
             return $this->buildRedirect($this->action('edit_batch', $batch->getId()));
-        } else {
-            $this->error->add(t('Invalid Batch.'));
-            $this->view();
         }
+        $this->error->add(t('Invalid Batch.'));
+        $this->view();
     }
 
     public function delete_batch_item()
@@ -407,7 +419,7 @@ class Batches extends DashboardPageController
             $this->set('batchItem', $batchItem);
             /** @var TransformerManager $manager */
             $manager = $this->app->make(TransformerManager::class);
-            $transformer = $manager->getTransformer((string)$this->get('transformer'));
+            $transformer = $manager->getTransformer((string) $this->get('transformer'));
             if ($transformer) {
                 $originalString = $this->getPreviewString($batchItem);
                 $this->set('originalString', $originalString);
@@ -598,14 +610,13 @@ class Batches extends DashboardPageController
                 $transformer->setOrder($index + 1);
                 $this->entityManager->persist($transformer);
             }
-            $this->entityManager->flush();;
+            $this->entityManager->flush();
 
             $this->flash('success', t('Transformers reordered successfully.'));
 
             return $this->buildRedirect($this->action('edit_batch', $batchItem->getBatch()->getId()));
-        } else {
-            $this->view();
         }
+        $this->view();
     }
 
     public function order_transformers($id)
@@ -659,7 +670,7 @@ class Batches extends DashboardPageController
                         $log = $logRepository->findOneByOriginal($sourcePath);
                         if ($log) {
                             $shouldSkip = true;
-                            $logger->info(t('Importing %s skipped. Already imported at %s.', $sourcePath, $log->getImportedPage()->getCollectionLink()));
+                            $logger->info(t('Importing %s skipped. Already imported at %s', $sourcePath, $log->getImportedPage()->getCollectionLink()));
                         }
                     }
                     if (!$shouldSkip) {

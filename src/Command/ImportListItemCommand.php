@@ -7,29 +7,64 @@ use Concrete\Core\Foundation\Command\Command;
 
 class ImportListItemCommand extends Command
 {
-    /** @var string|null */
+    /**
+     * @var string|null
+     */
     private $title;
-    /** @var \DateTime|string|null */
+
+    /**
+     * @var \DateTime|string|null
+     */
     private $date_time;
-    /** @var string|null */
+
+    /**
+     * @var string|null
+     */
     private $link;
-    /** @var string|null */
+
+    /**
+     * @var string|null
+     */
     private $topic;
-    /** @var string|null */
+
+    /**
+     * @var string|null
+     */
     private $topic_handle;
-    /** @var int|null */
+
+    /**
+     * @var int|null
+     */
     private $parentID;
-    /** @var int|null */
+
+    /**
+     * @var int|null
+     */
     private $typeID;
-    /** @var int|null */
+
+    /**
+     * @var int|null
+     */
     private $templateID;
-    /** @var string|null */
+
+    /**
+     * @var string|null
+     */
     private $file_handle;
-    /** @var int|null */
+
+    /**
+     * @var int|null
+     */
     private $folderID;
-    /** @var string|null */
+
+    /**
+     * @var string|null
+     */
     private $external_url_handle;
-    /** @var string|null */
+
+    /**
+     * @var string|null
+     */
     private $document_root;
 
     /**

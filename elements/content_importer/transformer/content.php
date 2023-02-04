@@ -1,5 +1,5 @@
 <?php
-defined('C5_EXECUTE') or die("Access Denied.");
+defined('C5_EXECUTE') or die('Access Denied.');
 
 /** @var \Concrete\Core\Form\Service\Form $form */
 /** @var \Concrete\Core\Tree\Node\Type\FileFolder $folder */

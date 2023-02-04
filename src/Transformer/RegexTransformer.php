@@ -27,7 +27,7 @@ class RegexTransformer implements TransformerInterface
      */
     public function getPattern(): string
     {
-        return (string)$this->pattern;
+        return (string) $this->pattern;
     }
 
     /**
@@ -43,7 +43,7 @@ class RegexTransformer implements TransformerInterface
      */
     public function getReplacement(): string
     {
-        return (string)$this->replacement;
+        return (string) $this->replacement;
     }
 
     /**

@@ -142,7 +142,7 @@ if ($pages) {
                 element: '#ccm-dialog-import',
                 modal: true,
                 width: 320,
-                title: '<?=t("import List Items") ?>',
+                title: '<?=t('import List Items') ?>',
                 height: 'auto'
             });
         });
