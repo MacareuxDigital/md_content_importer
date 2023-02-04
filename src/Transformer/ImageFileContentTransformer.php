@@ -4,14 +4,12 @@ namespace Macareux\ContentImporter\Transformer;
 
 use Concrete\Core\Editor\LinkAbstractor;
 use Concrete\Core\File\Import\ImportException;
-use Concrete\Core\File\Service\File;
 use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Logging\LoggerFactory;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
-use Concrete\Core\Url\UrlImmutable;
 use Macareux\ContentImporter\Traits\ImageFileTransformerTrait;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -27,6 +25,17 @@ class ImageFileContentTransformer implements TransformerInterface
     public function getExtensions()
     {
         return $this->extensions;
+    }
+
+    public function getExtensionsArray(): array
+    {
+        $result = [];
+        $extensions = explode(',', $this->getExtensions());
+        foreach ($extensions as $extension) {
+            $result[] = str_replace(['.', ' '], ['', ''], $extension);
+        }
+
+        return $result;
     }
 
     /**
@@ -62,6 +71,7 @@ class ImageFileContentTransformer implements TransformerInterface
             'folder' => $folder,
             'documentRoot' => $this->getDocumentRoot(),
             'extensions' => $this->getExtensions(),
+            'allowedHost' => $this->getAllowedHost(),
         ], 'md_content_importer')->render();
     }
 
@@ -70,6 +80,7 @@ class ImageFileContentTransformer implements TransformerInterface
         $this->setFolderNodeID($request->get('folderNodeID'));
         $this->setExtensions($request->get('extensions'));
         $this->setDocumentRoot($request->get('documentRoot'));
+        $this->setAllowedHost($request->get('allowedHost'));
     }
 
     public function transform(string $input): string
@@ -82,19 +93,11 @@ class ImageFileContentTransformer implements TransformerInterface
         $loggerFactory = $app->make(LoggerFactory::class);
         $logger = $loggerFactory->createLogger('importer');
 
-        // @var \Concrete\Core\Entity\Site\Site $site
-        $site = $app->make('site')->getSite();
-        $siteUrl = $site->getSiteCanonicalURL();
-        if ($siteUrl) {
-            $canonical = UrlImmutable::createFromUrl($siteUrl);
-        } else {
-            $canonical = UrlImmutable::createFromUrl(Request::getInstance()->getUri());
-        }
         $crawler = new Crawler($input);
 
-        $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver, $canonical, $logger) {
+        $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver, $logger) {
             $src = urldecode($node->attr('src'));
-            if ($src && strpos($src, (string) $canonical->getHost()) === false) {
+            if ($this->validateFile($src)) {
                 try {
                     $fv = $this->importFile($src);
                     $domNode = $node->getNode(0);
@@ -105,27 +108,19 @@ class ImageFileContentTransformer implements TransformerInterface
             }
         });
 
-        /** @var File $fileHelper */
-        $fileHelper = $app->make('helper/file');
-        $extensions = $this->getExtensions();
-        if ($extensions) {
-            $extensions = array_map('trim', explode(',', $extensions));
-            $crawler->filter('a')->each(function (Crawler $node, $i) use ($resolver, $fileHelper, $extensions, $canonical, $logger) {
-                $href = $node->attr('href');
-                if ($href && strpos($href, (string) $canonical->getHost()) === false) {
-                    $ext = '.' . $fileHelper->getExtension($href);
-                    if (in_array($ext, $extensions, true)) {
-                        try {
-                            $fv = $this->importFile($href);
-                            $domNode = $node->getNode(0);
-                            $domNode->setAttribute('href', $resolver->resolve(['/download_file', 'view', $fv->getFileUUID()]));
-                        } catch (ImportException $exception) {
-                            $logger->warning(sprintf('Failed to import file %s (reason: %s)', $href, $exception->getMessage()));
-                        }
-                    }
+        $extensions = $this->getExtensionsArray();
+        $crawler->filter('a')->each(function (Crawler $node, $i) use ($resolver, $logger, $extensions) {
+            $href = $node->attr('href');
+            if ($this->validateFile($href, $extensions)) {
+                try {
+                    $fv = $this->importFile($href);
+                    $domNode = $node->getNode(0);
+                    $domNode->setAttribute('href', $resolver->resolve(['/download_file', 'view', $fv->getFileUUID()]));
+                } catch (ImportException $exception) {
+                    $logger->warning(sprintf('Failed to import file %s (reason: %s)', $href, $exception->getMessage()));
                 }
-            });
-        }
+            }
+        });
 
         return LinkAbstractor::translateTo($crawler->filter('body')->html());
     }

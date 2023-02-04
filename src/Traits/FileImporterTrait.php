@@ -10,8 +10,10 @@ use Concrete\Core\File\Import\ImportException;
 use Concrete\Core\File\Import\ImportOptions;
 use Concrete\Core\File\Service\File;
 use Concrete\Core\File\Service\VolatileDirectory;
+use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
+use Concrete\Core\Url\UrlImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Macareux\ContentImporter\Entity\ImportFileLog;
 use Macareux\ContentImporter\Repository\ImportFileLogRepository;
@@ -27,6 +29,11 @@ trait FileImporterTrait
      * @var string|null
      */
     private $documentRoot;
+
+    /**
+     * @var string|null
+     */
+    private $allowedHost;
 
     /**
      * @return int
@@ -61,16 +68,33 @@ trait FileImporterTrait
     }
 
     /**
+     * @return string|null
+     */
+    public function getAllowedHost(): ?string
+    {
+        return $this->allowedHost;
+    }
+
+    /**
+     * @param string|null $allowedHost
+     */
+    public function setAllowedHost(string $allowedHost): void
+    {
+        $this->allowedHost = $allowedHost;
+    }
+
+    /**
      * @param $file
      *
-     * @throws \Concrete\Core\File\Import\ImportException
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \Concrete\Core\File\Import\ImportException
      *
      * @return Version
      */
     public function importFile($file): Version
     {
-        if ($this->getDocumentRoot()) {
+        $host = parse_url($file, PHP_URL_HOST);
+        if (!$host && $this->getDocumentRoot()) {
             $file = $this->getDocumentRoot() . parse_url($file, PHP_URL_PATH);
         }
 
@@ -113,6 +137,7 @@ trait FileImporterTrait
         }
 
         $fv = $importer->importLocalFile($fullFilename, $filename[1] . '.' . $filename[2], $options);
+
         $successLog = new ImportFileLog();
         $successLog->setImportedFID($fv->getFileID());
         $successLog->setImportDate(CarbonImmutable::now());
@@ -121,6 +146,57 @@ trait FileImporterTrait
         $entityManager->flush();
 
         return $fv;
+    }
+
+    /**
+     * @param string $path
+     * @param array $extensions
+     *
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     *
+     * @return bool
+     */
+    public function validateFile(string $path, array $extensions = []): bool
+    {
+        // If path is empty, skip
+        if ($path === '') {
+            return false;
+        }
+
+        // If host is not allowed, skip
+        if ($this->getAllowedHost()) {
+            $host = parse_url($path, PHP_URL_HOST);
+            if ($host && $this->getAllowedHost() !== $host) {
+                return false;
+            }
+        }
+
+        $app = Application::getFacadeApplication();
+
+        // If extension is not allowed, skip
+        // Always allow image file
+        $extensions = array_merge($extensions, ['png', 'gif', 'jpg', 'jpeg', 'svg', 'webm']);
+        /** @var File $fileHelper */
+        $fileHelper = $app->make('helper/file');
+        $needle = strtolower($fileHelper->getExtension($path));
+        if (!in_array($needle, $extensions, true)) {
+            return false;
+        }
+
+        // If file is hosted on same server, skip
+        // @var \Concrete\Core\Entity\Site\Site $site
+        $site = $app->make('site')->getSite();
+        $siteUrl = $site->getSiteCanonicalURL();
+        if ($siteUrl) {
+            $canonical = UrlImmutable::createFromUrl($siteUrl);
+        } else {
+            $canonical = UrlImmutable::createFromUrl(Request::getInstance()->getUri());
+        }
+        if (strpos($path, (string) $canonical->getHost()) !== false) {
+            return false;
+        }
+
+        return true;
     }
 
     private function getFolders(): array

@@ -8,7 +8,6 @@ use Concrete\Core\Http\Request;
 use Concrete\Core\Logging\LoggerFactory;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
-use Concrete\Core\Url\UrlImmutable;
 use Macareux\ContentImporter\Traits\ImageFileTransformerTrait;
 
 /**
@@ -42,6 +41,7 @@ class ImageFileAttributeTransformer implements TransformerInterface
             'folders' => $this->getFolders(),
             'folder' => $folder,
             'documentRoot' => $this->getDocumentRoot(),
+            'allowedHost' => $this->getAllowedHost(),
         ], 'md_content_importer')->render();
     }
 
@@ -49,6 +49,7 @@ class ImageFileAttributeTransformer implements TransformerInterface
     {
         $this->setFolderNodeID($request->get('folderNodeID'));
         $this->setDocumentRoot($request->get('documentRoot'));
+        $this->setAllowedHost($request->get('allowedHost'));
     }
 
     public function transform(string $input): string
@@ -57,15 +58,8 @@ class ImageFileAttributeTransformer implements TransformerInterface
         /** @var LoggerFactory $loggerFactory */
         $loggerFactory = $app->make(LoggerFactory::class);
         $logger = $loggerFactory->createLogger('importer');
-        // @var \Concrete\Core\Entity\Site\Site $site
-        $site = $app->make('site')->getSite();
-        $siteUrl = $site->getSiteCanonicalURL();
-        if ($siteUrl) {
-            $canonical = UrlImmutable::createFromUrl($siteUrl);
-        } else {
-            $canonical = UrlImmutable::createFromUrl(Request::getInstance()->getUri());
-        }
-        if ($input && strpos($input, (string) $canonical->getHost()) === false) {
+
+        if ($this->validateFile($input)) {
             try {
                 $fv = $this->importFile(urldecode($input));
 
