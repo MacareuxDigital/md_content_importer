@@ -93,6 +93,10 @@ class ImageFileContentTransformer implements TransformerInterface
         $loggerFactory = $app->make(LoggerFactory::class);
         $logger = $loggerFactory->createLogger('importer');
 
+        if (strpos($input, '{CCM:') !== false || strpos($input, '<concrete-picture')) {
+            $input = LinkAbstractor::translateFrom($input);
+        }
+
         $crawler = new Crawler($input);
 
         $crawler->filter('img')->each(function (Crawler $node, $i) use ($resolver, $logger) {
