@@ -47,11 +47,14 @@ class DateTimeTransformer implements TransformerInterface
 
     public function transform(string $input): string
     {
+        $dateTime = null;
         $format = $this->getFormat();
         if ($format) {
             $dateTime = \DateTimeImmutable::createFromFormat($format, $input);
-        } else {
-            $dateTime = new \DateTimeImmutable($input);
+        }
+
+        if (!is_object($dateTime)) {
+            $dateTime = new \DateTimeImmutable();
         }
 
         return $dateTime->format('Y-m-d H:i:s');
