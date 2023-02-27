@@ -5,7 +5,6 @@ namespace Macareux\ContentImporter\Export;
 use Doctrine\ORM\EntityManager;
 use League\Csv\Writer;
 use Macareux\ContentImporter\Entity\ImportFileLog;
-use Macareux\ContentImporter\Search\ImportBatchLogList;
 use Macareux\ContentImporter\Search\ImportFileLogList;
 
 class FileLogCsvWriter
@@ -35,7 +34,7 @@ class FileLogCsvWriter
         $this->writer->insertOne(iterator_to_array($this->getHeaders()));
     }
 
-    public function insertEntryList(ImportBatchLogList $list)
+    public function insertEntryList(ImportFileLogList $list)
     {
         $list = clone $list;
         foreach ($this->getEntries($list) as $entry) {
