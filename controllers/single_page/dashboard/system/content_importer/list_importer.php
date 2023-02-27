@@ -208,14 +208,33 @@ class ListImporter extends DashboardPageController
         $topics = $crawler->filter($topic_selector)->each(function (Crawler $node, $i) {
             return $node->innerText();
         });
+        if ($dates && count($dates) !== count($titles)) {
+            throw new \Exception(sprintf('%d date elements found, but we found %d titles. These numbers should be same.', count($dates), count($titles)));
+        }
+        if ($links && count($links) !== count($titles)) {
+            throw new \Exception(sprintf('%d link elements found, but we found %d titles. These numbers should be same.', count($links), count($titles)));
+        }
+        if ($topics && count($topics) !== count($titles)) {
+            throw new \Exception(sprintf('%d topic elements found, but we found %d titles. These numbers should be same.', count($topics), count($titles)));
+        }
+
+
         $items = [];
         foreach ($titles as $i => $title) {
             $item = new ImportListItemCommand();
             $item->setTitle($title);
-            $item->setDateTime($dates[$i]);
-            $item->setLink($links[$i]);
-            $item->setTopic($topics[$i]);
-            $item->setTopicHandle($topic_handle);
+            if ($dates) {
+                $item->setDateTime($dates[$i]);
+            } else {
+                $item->setDateTime(Carbon::now());
+            }
+            if ($links) {
+                $item->setLink($links[$i]);
+            }
+            if ($topics && $topic_handle) {
+                $item->setTopic($topics[$i]);
+                $item->setTopicHandle($topic_handle);
+            }
             $item->setParentID((int) $parentID);
             $item->setTypeID((int) $typeID);
             $item->setTemplateID((int) $templateID);
