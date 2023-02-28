@@ -20,7 +20,7 @@ if ($items) {
             <th><?= t('Title') ?></th>
             <th><?= t('Public Date') ?></th>
             <th><?= t('Link') ?></th>
-            <th><?= t('Title') ?></th>
+            <th><?= t('Topic') ?></th>
         </tr>
         <?php
         /** @var \Macareux\ContentImporter\Command\ImportListItemCommand $item */

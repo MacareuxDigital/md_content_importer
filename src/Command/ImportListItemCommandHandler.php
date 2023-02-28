@@ -2,6 +2,8 @@
 
 namespace Macareux\ContentImporter\Command;
 
+use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
 use Concrete\Core\File\Import\ImportException;
 use Concrete\Core\File\Service\File as FileService;
 use Concrete\Core\Logging\LoggerFactory;
@@ -17,9 +19,20 @@ class ImportListItemCommandHandler
 
     public function __invoke(ImportListItemCommand $command)
     {
+        $app = Application::getFacadeApplication();
+        /** @var LoggerFactory $loggerFactory */
+        $loggerFactory = $app->make(LoggerFactory::class);
+        $logger = $loggerFactory->createLogger('importer');
+        $logger->info(sprintf('Start importing %s...', $command->getTitle()));
+        $logger->debug(var_export($command, true));
+
         $data = ['cName' => $command->getTitle()];
-        if ($command->getDateTime()) {
-            $data['cDatePublic'] = $command->getDateTime()->format('Y-m-d H:i:s');
+        if ($command->getDateTime() && $command->getDateFormat()) {
+            try {
+                $dateTime = Carbon::createFromFormat($command->getDateFormat(), $command->getDateTime());
+                $data['cDatePublic'] = $dateTime->format('Y-m-d H:i:s');
+            } catch (InvalidFormatException $exception) {
+            }
         }
         $parent = Page::getByID($command->getParentID());
         $type = Type::getByID($command->getTypeID());
@@ -33,10 +46,6 @@ class ImportListItemCommandHandler
             if ($fileHelper->getExtension($link) === 'pdf') {
                 $this->setDocumentRoot($command->getDocumentRoot());
                 $this->setFolderNodeID($command->getFolderID());
-                $app = Application::getFacadeApplication();
-                /** @var LoggerFactory $loggerFactory */
-                $loggerFactory = $app->make(LoggerFactory::class);
-                $logger = $loggerFactory->createLogger('importer');
                 try {
                     $fv = $this->importFile($link);
                     $page->setAttribute($command->getFileHandle(), $fv->getFile());

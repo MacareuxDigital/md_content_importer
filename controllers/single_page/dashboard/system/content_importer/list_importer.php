@@ -151,19 +151,22 @@ class ListImporter extends DashboardPageController
         $document_root = $this->post('root');
         $pagination_selector = $this->post('pagination_selector');
 
-        /** @var PaginationLink[] $links */
-        $links = $crawler->filter($pagination_selector)
-            ->filter('a')->each(function (Crawler $node, $i) use ($document_root) {
-                $link = new PaginationLink();
-                $link->setLink($node->attr('href'));
-                $link->setBaseURL((string) $document_root);
+        $links = [];
+        if ($pagination_selector) {
+            /** @var PaginationLink[] $links */
+            $links = $crawler->filter($pagination_selector)
+                ->filter('a')->each(function (Crawler $node, $i) use ($document_root) {
+                    $link = new PaginationLink();
+                    $link->setLink($node->attr('href'));
+                    $link->setBaseURL((string)$document_root);
 
-                return $link;
-            });
+                    return $link;
+                });
 
-        foreach ($links as $i => $link) {
-            if ((string) $link->getLink() === $url) {
-                unset($links[$i]);
+            foreach ($links as $i => $link) {
+                if ((string)$link->getLink() === $url) {
+                    unset($links[$i]);
+                }
             }
         }
 
@@ -191,23 +194,24 @@ class ListImporter extends DashboardPageController
         $templateID = $this->post('template');
         $document_root = $this->post('root');
 
-        $dates = $crawler->filter($date_selector)->each(function (Crawler $node, $i) use ($date_format) {
-            $dateString = $node->innerText();
-            if ($dateString && $date_format) {
-                return Carbon::createFromFormat($date_format, $dateString);
-            }
-
-            return Carbon::now();
-        });
+        $dates = [];
+        $topics = [];
+        if ($date_selector) {
+            $dates = $crawler->filter($date_selector)->each(function (Crawler $node, $i) {
+                return $node->innerText();
+            });
+        }
         $titles = $crawler->filter($title_selector)->each(function (Crawler $node, $i) {
             return $node->innerText();
         });
         $links = $crawler->filter($link_selector)->each(function (Crawler $node, $i) {
             return $node->attr('href');
         });
-        $topics = $crawler->filter($topic_selector)->each(function (Crawler $node, $i) {
-            return $node->innerText();
-        });
+        if ($topic_selector) {
+            $topics = $crawler->filter($topic_selector)->each(function (Crawler $node, $i) {
+                return $node->innerText();
+            });
+        }
         if ($dates && count($dates) !== count($titles)) {
             throw new \Exception(sprintf('%d date elements found, but we found %d titles. These numbers should be same.', count($dates), count($titles)));
         }
@@ -223,10 +227,11 @@ class ListImporter extends DashboardPageController
         foreach ($titles as $i => $title) {
             $item = new ImportListItemCommand();
             $item->setTitle($title);
+            if ($date_format) {
+                $item->setDateFormat($date_format);
+            }
             if ($dates) {
                 $item->setDateTime($dates[$i]);
-            } else {
-                $item->setDateTime(Carbon::now());
             }
             if ($links) {
                 $item->setLink($links[$i]);

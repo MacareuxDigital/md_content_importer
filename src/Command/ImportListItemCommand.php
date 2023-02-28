@@ -2,7 +2,6 @@
 
 namespace Macareux\ContentImporter\Command;
 
-use Carbon\Carbon;
 use Concrete\Core\Foundation\Command\Command;
 
 class ImportListItemCommand extends Command
@@ -13,7 +12,12 @@ class ImportListItemCommand extends Command
     private $title;
 
     /**
-     * @var \DateTime|string|null
+     * @var string|null
+     */
+    private $date_format;
+
+    /**
+     * @var string|null
      */
     private $date_time;
 
@@ -84,21 +88,34 @@ class ImportListItemCommand extends Command
     }
 
     /**
-     * @return \DateTime|null
+     * @return string|null
      */
-    public function getDateTime(): ?\DateTime
+    public function getDateTime(): ?string
     {
         return $this->date_time;
     }
 
     /**
-     * @param \DateTime|string $date_time
+     * @return string|null
      */
-    public function setDateTime($date_time): void
+    public function getDateFormat(): ?string
     {
-        if (!$date_time instanceof \DateTimeInterface) {
-            $date_time = Carbon::createFromFormat(\DateTime::ATOM, $date_time);
-        }
+        return $this->date_format;
+    }
+
+    /**
+     * @param string|null $date_format
+     */
+    public function setDateFormat(?string $date_format): void
+    {
+        $this->date_format = $date_format;
+    }
+
+    /**
+     * @param string|null $date_time
+     */
+    public function setDateTime(?string $date_time): void
+    {
         $this->date_time = $date_time;
     }
 
@@ -129,7 +146,7 @@ class ImportListItemCommand extends Command
     /**
      * @param string $topic
      */
-    public function setTopic(string $topic): void
+    public function setTopic(?string $topic): void
     {
         $this->topic = $topic;
     }
@@ -145,7 +162,7 @@ class ImportListItemCommand extends Command
     /**
      * @param string $topic_handle
      */
-    public function setTopicHandle(string $topic_handle): void
+    public function setTopicHandle(?string $topic_handle): void
     {
         $this->topic_handle = $topic_handle;
     }
