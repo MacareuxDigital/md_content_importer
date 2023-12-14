@@ -93,9 +93,13 @@ trait FileImporterTrait
      */
     public function importFile($file): Version
     {
-        $host = parse_url($file, PHP_URL_HOST);
-        if (!$host && $this->getDocumentRoot()) {
-            $file = $this->getDocumentRoot() . parse_url($file, PHP_URL_PATH);
+        if ($this->getDocumentRoot()) {
+            $host = parse_url($file, PHP_URL_HOST);
+            if ($host) {
+                $file = $this->getDocumentRoot() . parse_url($file, PHP_URL_PATH);
+            } else {
+                $file = $this->getDocumentRoot() . $file;
+            }
         }
 
         $app = Application::getFacadeApplication();
@@ -175,7 +179,7 @@ trait FileImporterTrait
 
         // If extension is not allowed, skip
         // Always allow image file
-        $extensions = array_merge($extensions, ['png', 'gif', 'jpg', 'jpeg', 'svg', 'webm']);
+        $extensions = array_merge($extensions, ['png', 'gif', 'jpg', 'jpeg', 'svg', 'webp']);
         /** @var File $fileHelper */
         $fileHelper = $app->make('helper/file');
         $needle = strtolower($fileHelper->getExtension($path));

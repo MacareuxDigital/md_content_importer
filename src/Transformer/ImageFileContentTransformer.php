@@ -108,6 +108,8 @@ class ImageFileContentTransformer implements TransformerInterface
                     $domNode->setAttribute('src', $resolver->resolve(['/download_file', 'view_inline', $fv->getFileUUID()]));
                 } catch (ImportException $exception) {
                     $logger->warning(sprintf('Failed to import file %s (reason: %s)', $src, $exception->getMessage()));
+                } catch (\RuntimeException $exception) {
+                    $logger->alert(sprintf('Failed to import file %s (reason: %s)', $src, $exception->getMessage()));
                 }
             }
         });
@@ -122,6 +124,8 @@ class ImageFileContentTransformer implements TransformerInterface
                     $domNode->setAttribute('href', $resolver->resolve(['/download_file', 'view', $fv->getFileUUID()]));
                 } catch (ImportException $exception) {
                     $logger->warning(sprintf('Failed to import file %s (reason: %s)', $href, $exception->getMessage()));
+                } catch (\RuntimeException $exception) {
+                    $logger->alert(sprintf('Failed to import file %s (reason: %s)', $href, $exception->getMessage()));
                 }
             }
         });
