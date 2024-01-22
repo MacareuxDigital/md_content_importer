@@ -116,7 +116,7 @@ class ImageFileContentTransformer implements TransformerInterface
 
         $extensions = $this->getExtensionsArray();
         $crawler->filter('a')->each(function (Crawler $node, $i) use ($resolver, $logger, $extensions) {
-            $href = $node->attr('href');
+            $href = (string) $node->attr('href');
             if ($this->validateFile($href, $extensions)) {
                 try {
                     $fv = $this->importFile($href);
