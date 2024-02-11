@@ -17,8 +17,17 @@ defined('C5_EXECUTE') or die('Access Denied.');
 ?>
 <form method="get" action="<?= $view->action('add_transformer', $batchItem->getId()) ?>">
     <div class="form-group">
-        <?= $form->label('transformer', t('Transformer')) ?>
-        <?= $form->select('transformer', $transformers) ?>
+        <?php
+        foreach ($transformers as $transformer) {
+            ?>
+            <div class="form-check mb-2">
+                <?= $form->radio('transformer', $transformer->getTransformerHandle(), false, ['id' => $transformer->getTransformerHandle(), 'class' => 'form-check-input', 'required' => 'required']) ?>
+                <?= $form->label($transformer->getTransformerHandle(), $transformer->getTransformerName(), ['class' => 'form-check-label', 'aria-describedby' => $transformer->getTransformerHandle() . '-description']) ?>
+                <div id="<?= $transformer->getTransformerHandle() ?>-description" class="form-text"><?= $transformer->getTransformerDescription() ?></div>
+            </div>
+            <?php
+        }
+        ?>
     </div>
     <div class="ccm-dashboard-form-actions-wrapper">
         <div class="ccm-dashboard-form-actions">

@@ -20,11 +20,11 @@ if ($batchItem->getFilterType() !== BatchItem::TYPE_FILENAME && $batchItem->getF
 ?>
 
 <div class="ccm-dashboard-header-buttons">
-    <button data-dialog="delete-item" class="btn btn-danger"><?php echo t('Delete'); ?></button>
+    <button data-dialog="delete-item" class="btn btn-danger"><?= t('Delete') ?></button>
 </div>
 <div style="display: none">
     <div id="ccm-dialog-delete-item" class="ccm-ui">
-        <form method="post" class="form-stacked" action="<?= $view->action('delete_batch_item'); ?>">
+        <form method="post" class="form-stacked" action="<?= $view->action('delete_batch_item') ?>">
             <?= $token->output('delete_batch_item') ?>
             <?= $form->hidden('batch_item', $batchItem->getId()) ?>
             <p><?= t('Are you sure? This action cannot be undone.') ?></p>
@@ -44,7 +44,7 @@ if ($batchItem->getFilterType() !== BatchItem::TYPE_FILENAME && $batchItem->getF
                 element: '#ccm-dialog-delete-item',
                 modal: true,
                 width: 320,
-                title: '<?=t('Delete Batch Item') ?>',
+                title: '<?= t('Delete Batch Item') ?>',
                 height: 'auto'
             });
         });

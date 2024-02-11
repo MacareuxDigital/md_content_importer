@@ -8,6 +8,7 @@ use Concrete\Core\Http\Request;
 use Concrete\Core\Logging\LoggerFactory;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
+use Macareux\ContentImporter\Entity\BatchItem;
 use Macareux\ContentImporter\Traits\ImageFileTransformerTrait;
 
 /**
@@ -22,12 +23,17 @@ class ImageFileAttributeTransformer implements TransformerInterface
         return tc('ContentImporterTransformer', 'Import Image or File for Image File Attribute');
     }
 
+    public function getTransformerDescription(): string
+    {
+        return t('Upload a image or file to the file manager and return the file ID for image file attribute. Input should be a URL of the image or file.');
+    }
+
     public function getTransformerHandle(): string
     {
         return 'image_file_attribute';
     }
 
-    public function renderForm(): void
+    public function renderForm(BatchItem $batchItem): void
     {
         $app = Application::getFacadeApplication();
 
@@ -35,13 +41,24 @@ class ImageFileAttributeTransformer implements TransformerInterface
         if ($this->getFolderNodeID()) {
             $folder = FileFolder::getByID($this->getFolderNodeID());
         }
+        $documentRoot = $this->getDocumentRoot() ?: $batchItem->getBatch()->getDocumentRoot();
+        /** @var \Concrete\Core\Config\Repository\Repository $config */
+        $config = $app->make('config');
+        /** @var \Concrete\Core\File\Service\Application $helper_file */
+        $helper_file = $app->make('helper/concrete/file');
+        $extensions = $this->getExtensions() ?: implode(', ', $helper_file->unserializeUploadFileExtensions($config->get('concrete.upload.extensions')));
+        $allowedHost = $this->getAllowedHost();
+        if (!$allowedHost) {
+            $allowedHost = parse_url($documentRoot, PHP_URL_HOST);
+        }
         $manager = $app->make(ElementManager::class);
-        $manager->get('content_importer/transformer/image_file', [
+        $manager->get('content_importer/transformer/file', [
             'form' => $app->make('helper/form'),
             'folders' => $this->getFolders(),
             'folder' => $folder,
-            'documentRoot' => $this->getDocumentRoot(),
-            'allowedHost' => $this->getAllowedHost(),
+            'documentRoot' => $documentRoot,
+            'extensions' => $extensions,
+            'allowedHost' => $allowedHost,
         ], 'md_content_importer')->render();
     }
 

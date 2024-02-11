@@ -22,11 +22,11 @@ if ($batchItemTransformer) {
     $cancelLink = UrlFacade::to('/dashboard/system/content_importer/batches/edit_batch', $batchItemTransformer->getBatchItem()->getBatch()->getId());
     ?>
     <div class="ccm-dashboard-header-buttons">
-        <button data-dialog="delete-item" class="btn btn-danger"><?php echo t('Delete'); ?></button>
+        <button data-dialog="delete-item" class="btn btn-danger"><?= t('Delete') ?></button>
     </div>
     <div style="display: none">
         <div id="ccm-dialog-delete-item" class="ccm-ui">
-            <form method="post" class="form-stacked" action="<?= $view->action('delete_transformer'); ?>">
+            <form method="post" class="form-stacked" action="<?= $view->action('delete_transformer') ?>">
                 <?= $token->output('delete_transformer') ?>
                 <?= $form->hidden('transformer', $batchItemTransformer->getId()) ?>
                 <p><?= t('Are you sure? This action cannot be undone.') ?></p>
@@ -46,7 +46,7 @@ if ($batchItemTransformer) {
                     element: '#ccm-dialog-delete-item',
                     modal: true,
                     width: 320,
-                    title: '<?=t('Delete Transformer') ?>',
+                    title: '<?= t('Delete Transformer') ?>',
                     height: 'auto'
                 });
             });
@@ -62,12 +62,14 @@ if ($batchItemTransformer) {
     $token->output('submit_transformer');
     if ($batchItemTransformer) {
         echo $form->hidden('transformer', $batchItemTransformer->getId());
+        $submitLabel = t('Save Transformer');
     } else {
         echo $form->hidden('transformer', $transformer->getTransformerHandle());
+        $submitLabel = t('Add Transformer');
     }
     ?>
     <fieldset>
-        <?php $transformer->renderForm(); ?>
+        <?php $transformer->renderForm($batchItem) ?>
     </fieldset>
     <?php if ($transformer->supportPreview()) { ?>
         <fieldset>
@@ -93,7 +95,7 @@ if ($batchItemTransformer) {
         <div class="ccm-dashboard-form-actions">
             <a href="<?= $cancelLink ?>"
                class="btn btn-secondary float-start"><?= t('Cancel') ?></a>
-            <?= $form->submit('save', t('Save Transformer'), ['class' => 'btn btn-primary float-end ms-2']) ?>
+            <?= $form->submit('save', $submitLabel, ['class' => 'btn btn-primary float-end ms-2']) ?>
             <?php if ($transformer->supportPreview()) { ?>
                 <?= $form->button('preview', t('Preview'), ['class' => 'btn btn-secondary float-end']) ?>
             <?php } ?>

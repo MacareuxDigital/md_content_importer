@@ -6,6 +6,7 @@ use Concrete\Core\Error\ErrorList\ErrorList;
 use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application;
+use Macareux\ContentImporter\Entity\BatchItem;
 
 /**
  * Transformer uses str_replace.
@@ -59,6 +60,11 @@ class RegexTransformer implements TransformerInterface
         return tc('ContentImporterTransformer', 'Regular Expression Search and Replace');
     }
 
+    public function getTransformerDescription(): string
+    {
+        return t('Searches a string for a pattern, and replaces the matched substring with a replacement string.');
+    }
+
     public function getTransformerHandle(): string
     {
         return 'regex';
@@ -79,7 +85,7 @@ class RegexTransformer implements TransformerInterface
         return $input;
     }
 
-    public function renderForm(): void
+    public function renderForm(BatchItem $batchItem): void
     {
         $app = Application::getFacadeApplication();
         $manager = $app->make(ElementManager::class);

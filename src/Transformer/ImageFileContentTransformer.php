@@ -10,6 +10,7 @@ use Concrete\Core\Logging\LoggerFactory;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
+use Macareux\ContentImporter\Entity\BatchItem;
 use Macareux\ContentImporter\Traits\ImageFileTransformerTrait;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -17,38 +18,14 @@ class ImageFileContentTransformer implements TransformerInterface
 {
     use ImageFileTransformerTrait;
 
-    private $extensions;
-
-    /**
-     * @return mixed
-     */
-    public function getExtensions()
-    {
-        return $this->extensions;
-    }
-
-    public function getExtensionsArray(): array
-    {
-        $result = [];
-        $extensions = explode(',', $this->getExtensions());
-        foreach ($extensions as $extension) {
-            $result[] = str_replace(['.', ' '], ['', ''], $extension);
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param mixed $extensions
-     */
-    public function setExtensions($extensions): void
-    {
-        $this->extensions = $extensions;
-    }
-
     public function getTransformerName(): string
     {
         return tc('ContentImporterTransformer', 'Import Images & Files in HTML');
+    }
+
+    public function getTransformerDescription(): string
+    {
+        return t('Upload images and files to the file manager in HTML content.');
     }
 
     public function getTransformerHandle(): string
@@ -56,7 +33,7 @@ class ImageFileContentTransformer implements TransformerInterface
         return 'image_file_content';
     }
 
-    public function renderForm(): void
+    public function renderForm(BatchItem $batchItem): void
     {
         $app = Application::getFacadeApplication();
 
@@ -64,14 +41,24 @@ class ImageFileContentTransformer implements TransformerInterface
         if ($this->getFolderNodeID()) {
             $folder = FileFolder::getByID($this->getFolderNodeID());
         }
+        $documentRoot = $this->getDocumentRoot() ?: $batchItem->getBatch()->getDocumentRoot();
+        /** @var \Concrete\Core\Config\Repository\Repository $config */
+        $config = $app->make('config');
+        /** @var \Concrete\Core\File\Service\Application $helper_file */
+        $helper_file = $app->make('helper/concrete/file');
+        $extensions = $this->getExtensions() ?: implode(', ', $helper_file->unserializeUploadFileExtensions($config->get('concrete.upload.extensions')));
+        $allowedHost = $this->getAllowedHost();
+        if (!$allowedHost) {
+            $allowedHost = parse_url($documentRoot, PHP_URL_HOST);
+        }
         $manager = $app->make(ElementManager::class);
-        $manager->get('content_importer/transformer/content', [
+        $manager->get('content_importer/transformer/file', [
             'form' => $app->make('helper/form'),
             'folders' => $this->getFolders(),
             'folder' => $folder,
-            'documentRoot' => $this->getDocumentRoot(),
-            'extensions' => $this->getExtensions(),
-            'allowedHost' => $this->getAllowedHost(),
+            'documentRoot' => $documentRoot,
+            'extensions' => $extensions,
+            'allowedHost' => $allowedHost,
         ], 'md_content_importer')->render();
     }
 

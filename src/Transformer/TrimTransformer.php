@@ -4,14 +4,18 @@ namespace Macareux\ContentImporter\Transformer;
 
 use Concrete\Core\Error\ErrorList\ErrorList;
 use Concrete\Core\Http\Request;
-use Concrete\Core\Support\Facade\Application;
-use Concrete\Core\Utility\Service\Text;
+use Macareux\ContentImporter\Entity\BatchItem;
 
 class TrimTransformer implements TransformerInterface
 {
     public function getTransformerName(): string
     {
-        return t('Trim');
+        return tc('ContentImporterTransformer', 'Trim');
+    }
+
+    public function getTransformerDescription(): string
+    {
+        return t('Trim the input string.');
     }
 
     public function getTransformerHandle(): string
@@ -29,8 +33,9 @@ class TrimTransformer implements TransformerInterface
         return trim($input);
     }
 
-    public function renderForm(): void
+    public function renderForm(BatchItem $batchItem): void
     {
+        // No options
     }
 
     public function validateRequest(Request $request): ErrorList
@@ -40,5 +45,6 @@ class TrimTransformer implements TransformerInterface
 
     public function updateFromRequest(Request $request): void
     {
+        // No options
     }
 }

@@ -31,10 +31,10 @@ if (isset($pagination)) {
         <?php } ?>
         </tbody>
     </table>
-    <?php echo $pagination->renderView('dashboard'); ?>
+    <?= $pagination->renderView('dashboard') ?>
     <div style="display: none">
         <div id="ccm-dialog-import-batch" class="ccm-ui">
-            <form method="post" class="form-stacked" action="<?= $view->action('import_batch'); ?>">
+            <form method="post" class="form-stacked" action="<?= $view->action('import_batch') ?>">
                 <?= $token->output('import_batch') ?>
                 <?= $form->hidden('batch_id') ?>
                 <p><?= t('Are you sure? This action cannot be undone.') ?></p>
@@ -53,7 +53,7 @@ if (isset($pagination)) {
             </div>
         </div>
         <div id="ccm-dialog-delete-batch" class="ccm-ui">
-            <form method="post" class="form-stacked" action="<?= $view->action('delete_batch'); ?>">
+            <form method="post" class="form-stacked" action="<?= $view->action('delete_batch') ?>">
                 <?= $token->output('delete_batch') ?>
                 <?= $form->hidden('delete_batch_id') ?>
                 <p><?= t('Are you sure? This action cannot be undone.') ?></p>
@@ -74,7 +74,7 @@ if (isset($pagination)) {
                     element: '#ccm-dialog-import-batch',
                     modal: true,
                     width: 320,
-                    title: '<?=t('import Batch') ?>',
+                    title: '<?= t('import Batch') ?>',
                     height: 'auto'
                 });
             });
@@ -84,7 +84,7 @@ if (isset($pagination)) {
                     data: $(this).serializeArray(),
                     title: <?= json_encode(t('Import Pages')) ?>,
                     onComplete: function () {
-                        window.location.href = <?=json_encode((string)$this->action('import_completed')) ?>;
+                        window.location.href = <?= json_encode((string) $this->action('import_completed')) ?>;
                     }
                 });
                 return false;
@@ -95,7 +95,7 @@ if (isset($pagination)) {
                     element: '#ccm-dialog-delete-batch',
                     modal: true,
                     width: 320,
-                    title: '<?=t('Delete Batch') ?>',
+                    title: '<?= t('Delete Batch') ?>',
                     height: 'auto'
                 });
             });

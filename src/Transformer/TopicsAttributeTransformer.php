@@ -5,6 +5,7 @@ namespace Macareux\ContentImporter\Transformer;
 use Concrete\Core\Error\ErrorList\ErrorList;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Tree\Node\Type\Topic;
+use Macareux\ContentImporter\Entity\BatchItem;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -15,6 +16,11 @@ class TopicsAttributeTransformer implements TransformerInterface
     public function getTransformerName(): string
     {
         return tc('ContentImporterTransformer', 'Topics Attribute');
+    }
+
+    public function getTransformerDescription(): string
+    {
+        return t('Import topics and return the topic IDs for topics attribute. Input should be a HTML content containing topic labels.');
     }
 
     public function getTransformerHandle(): string
@@ -44,7 +50,7 @@ class TopicsAttributeTransformer implements TransformerInterface
         return implode('|', $topics);
     }
 
-    public function renderForm(): void
+    public function renderForm(BatchItem $batchItem): void
     {
         // No options
     }

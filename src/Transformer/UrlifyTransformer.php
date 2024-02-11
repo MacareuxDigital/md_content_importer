@@ -6,12 +6,18 @@ use Concrete\Core\Error\ErrorList\ErrorList;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Utility\Service\Text;
+use Macareux\ContentImporter\Entity\BatchItem;
 
 class UrlifyTransformer implements TransformerInterface
 {
     public function getTransformerName(): string
     {
         return t('URLify');
+    }
+
+    public function getTransformerDescription(): string
+    {
+        return t('Convert text to "lowercase-dash-separated" format.');
     }
 
     public function getTransformerHandle(): string
@@ -32,8 +38,9 @@ class UrlifyTransformer implements TransformerInterface
         return $text->urlify($input);
     }
 
-    public function renderForm(): void
+    public function renderForm(BatchItem $batchItem): void
     {
+        // No options
     }
 
     public function validateRequest(Request $request): ErrorList
@@ -43,5 +50,6 @@ class UrlifyTransformer implements TransformerInterface
 
     public function updateFromRequest(Request $request): void
     {
+        // No options
     }
 }

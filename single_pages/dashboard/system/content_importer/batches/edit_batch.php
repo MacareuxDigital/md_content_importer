@@ -1,5 +1,6 @@
 <?php
 
+use Concrete\Core\Page\Type\Composer\Control\CollectionAttributeControl;
 use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\DateTimeCorePageProperty;
 use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\PageTemplateCorePageProperty;
 use Concrete\Core\Page\Type\Composer\Control\CorePageProperty\PublishTargetCorePageProperty;
@@ -98,8 +99,20 @@ foreach ($formLayoutSets as $formLayoutSet) {
                             <?php
                         } elseif ($composerControlObject instanceof DateTimeCorePageProperty) {
                             ?>
-                            <div class="alert alert-warning"><?= t('You must set Date Time transformer.') ?></div>
+                            <div class="alert alert-warning"><?= t('You must set "Date Time" transformer.') ?></div>
                             <?php
+                        } elseif ($composerControlObject instanceof CollectionAttributeControl) {
+                            /** @var \Concrete\Core\Entity\Attribute\Key\PageKey $ak */
+                            $ak = $composerControlObject->getAttributeKeyObject();
+                            if ($ak->getAttributeTypeHandle() === 'image_file') {
+                                ?>
+                                <div class="alert alert-warning"><?= t('You must set "Import Image or File for Image File Attribute" transformer.') ?></div>
+                                <?php
+                            } elseif ($ak->getAttributeTypeHandle() === 'topics') {
+                                ?>
+                                <div class="alert alert-warning"><?= t('You must set "Topics Attribute" transformer.') ?></div>
+                                <?php
+                            }
                         }
                         ?>
                         <a href="<?= $view->action('add_transformer', $batchItem->getId()) ?>"

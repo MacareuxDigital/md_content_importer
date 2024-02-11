@@ -124,7 +124,7 @@ if ($pages) {
 </form>
 <div style="display: none">
     <div id="ccm-dialog-import" class="ccm-ui">
-        <form method="post" class="form-stacked" action="<?= $view->action('import'); ?>">
+        <form method="post" class="form-stacked" action="<?= $view->action('import') ?>">
             <p><?= t('Are you sure? This action cannot be undone.') ?></p>
         </form>
         <div class="dialog-buttons">
@@ -142,7 +142,7 @@ if ($pages) {
                 element: '#ccm-dialog-import',
                 modal: true,
                 width: 320,
-                title: '<?=t('import List Items') ?>',
+                title: '<?= t('import List Items') ?>',
                 height: 'auto'
             });
         });
@@ -152,7 +152,7 @@ if ($pages) {
                 data: $('#import-setting-form').serializeArray(),
                 title: <?= json_encode(t('Import Links')) ?>,
                 onComplete: function () {
-                    window.location.href = <?=json_encode((string) $this->action('import_completed')) ?>;
+                    window.location.href = <?= json_encode((string) $this->action('import_completed')) ?>;
                 }
             });
             return false;

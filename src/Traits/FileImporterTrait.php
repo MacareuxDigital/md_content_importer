@@ -10,10 +10,8 @@ use Concrete\Core\File\Import\ImportException;
 use Concrete\Core\File\Import\ImportOptions;
 use Concrete\Core\File\Service\File;
 use Concrete\Core\File\Service\VolatileDirectory;
-use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
-use Concrete\Core\Url\UrlImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Macareux\ContentImporter\Entity\ImportFileLog;
 use Macareux\ContentImporter\Repository\ImportFileLogRepository;
@@ -29,6 +27,11 @@ trait FileImporterTrait
      * @var string|null
      */
     private $documentRoot;
+
+    /**
+     * @var string|null
+     */
+    private $extensions;
 
     /**
      * @var string|null
@@ -70,6 +73,33 @@ trait FileImporterTrait
     /**
      * @return string|null
      */
+    public function getExtensions()
+    {
+        return $this->extensions;
+    }
+
+    public function getExtensionsArray(): array
+    {
+        $result = [];
+        $extensions = explode(',', $this->getExtensions());
+        foreach ($extensions as $extension) {
+            $result[] = str_replace(['.', ' '], ['', ''], $extension);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $extensions
+     */
+    public function setExtensions(string $extensions): void
+    {
+        $this->extensions = $extensions;
+    }
+
+    /**
+     * @return string|null
+     */
     public function getAllowedHost(): ?string
     {
         return $this->allowedHost;
@@ -95,9 +125,7 @@ trait FileImporterTrait
     {
         if ($this->getDocumentRoot()) {
             $host = parse_url($file, PHP_URL_HOST);
-            if ($host) {
-                $file = $this->getDocumentRoot() . parse_url($file, PHP_URL_PATH);
-            } else {
+            if (!$host) {
                 $file = $this->getDocumentRoot() . $file;
             }
         }
@@ -132,7 +160,6 @@ trait FileImporterTrait
         $importer = $app->make(FileImporter::class);
         /** @var ImportOptions $options */
         $options = $app->make(ImportOptions::class);
-        $options->setSkipThumbnailGeneration(true);
         if ($this->getFolderNodeID()) {
             $folder = FileFolder::getByID($this->getFolderNodeID());
             if ($folder) {
@@ -178,25 +205,10 @@ trait FileImporterTrait
         $app = Application::getFacadeApplication();
 
         // If extension is not allowed, skip
-        // Always allow image file
-        $extensions = array_merge($extensions, ['png', 'gif', 'jpg', 'jpeg', 'svg', 'webp']);
         /** @var File $fileHelper */
         $fileHelper = $app->make('helper/file');
         $needle = strtolower($fileHelper->getExtension($path));
         if (!in_array($needle, $extensions, true)) {
-            return false;
-        }
-
-        // If file is hosted on same server, skip
-        // @var \Concrete\Core\Entity\Site\Site $site
-        $site = $app->make('site')->getSite();
-        $siteUrl = $site->getSiteCanonicalURL();
-        if ($siteUrl) {
-            $canonical = UrlImmutable::createFromUrl($siteUrl);
-        } else {
-            $canonical = UrlImmutable::createFromUrl(Request::getInstance()->getUri());
-        }
-        if (strpos($path, (string) $canonical->getHost()) !== false) {
             return false;
         }
 

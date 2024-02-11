@@ -6,6 +6,7 @@ use Concrete\Core\Error\ErrorList\ErrorList;
 use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application;
+use Macareux\ContentImporter\Entity\BatchItem;
 
 /**
  * Transformer uses str_replace.
@@ -53,6 +54,11 @@ class ReplaceTransformer implements TransformerInterface
         return tc('ContentImporterTransformer', 'Search and Replace');
     }
 
+    public function getTransformerDescription(): string
+    {
+        return t('Simple search and replace string.');
+    }
+
     public function getTransformerHandle(): string
     {
         return 'replace';
@@ -68,7 +74,7 @@ class ReplaceTransformer implements TransformerInterface
         return str_replace($this->getSearch(), $this->getReplace(), $input);
     }
 
-    public function renderForm(): void
+    public function renderForm(BatchItem $batchItem): void
     {
         $app = Application::getFacadeApplication();
         $manager = $app->make(ElementManager::class);

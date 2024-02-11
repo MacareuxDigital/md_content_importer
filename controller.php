@@ -4,6 +4,7 @@
 
 namespace Concrete\Package\MdContentImporter;
 
+use Concrete\Core\Error\UserMessageException;
 use Concrete\Core\Foundation\Service\ProviderList;
 use Concrete\Core\Package\Package;
 use Macareux\ContentImporter\Install\Installer;
@@ -16,7 +17,7 @@ class Controller extends Package
 
     protected $pkgHandle = 'md_content_importer';
 
-    protected $pkgVersion = '0.7.1';
+    protected $pkgVersion = '1.0.0';
 
     protected $pkgAutoloaderRegistries = [
         'src' => '\Macareux\ContentImporter',
@@ -34,6 +35,10 @@ class Controller extends Package
 
     public function install()
     {
+        if (!is_file($this->getPackagePath() . '/vendor/autoload.php')) {
+            throw new UserMessageException(t('Please run `composer install` in the package directory before installing the package.'));
+        }
+
         $pkg = parent::install();
 
         /** @var Installer $installer */

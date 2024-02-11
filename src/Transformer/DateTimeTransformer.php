@@ -6,6 +6,7 @@ use Concrete\Core\Error\ErrorList\ErrorList;
 use Concrete\Core\Filesystem\ElementManager;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application;
+use Macareux\ContentImporter\Entity\BatchItem;
 
 class DateTimeTransformer implements TransformerInterface
 {
@@ -32,7 +33,12 @@ class DateTimeTransformer implements TransformerInterface
 
     public function getTransformerName(): string
     {
-        return tc('ContentImporterTransformer', 'Date Time Format Converter');
+        return tc('ContentImporterTransformer', 'Date Time');
+    }
+
+    public function getTransformerDescription(): string
+    {
+        return t('Converts a date time string to a date time object.');
     }
 
     public function getTransformerHandle(): string
@@ -60,7 +66,7 @@ class DateTimeTransformer implements TransformerInterface
         return $dateTime->format('Y-m-d H:i:s');
     }
 
-    public function renderForm(): void
+    public function renderForm(BatchItem $batchItem): void
     {
         $app = Application::getFacadeApplication();
         $manager = $app->make(ElementManager::class);

@@ -4,7 +4,6 @@
 
 namespace Concrete\Package\MdContentImporter\Controller\SinglePage\Dashboard\System\ContentImporter;
 
-use Carbon\Carbon;
 use Concrete\Core\Command\Batch\Batch;
 use Concrete\Core\File\Service\File as FileService;
 use Concrete\Core\Http\ResponseFactoryInterface;
@@ -158,13 +157,13 @@ class ListImporter extends DashboardPageController
                 ->filter('a')->each(function (Crawler $node, $i) use ($document_root) {
                     $link = new PaginationLink();
                     $link->setLink($node->attr('href'));
-                    $link->setBaseURL((string)$document_root);
+                    $link->setBaseURL((string) $document_root);
 
                     return $link;
                 });
 
             foreach ($links as $i => $link) {
-                if ((string)$link->getLink() === $url) {
+                if ((string) $link->getLink() === $url) {
                     unset($links[$i]);
                 }
             }
@@ -221,7 +220,6 @@ class ListImporter extends DashboardPageController
         if ($topics && count($topics) !== count($titles)) {
             throw new \Exception(sprintf('%d topic elements found, but we found %d titles. These numbers should be same.', count($topics), count($titles)));
         }
-
 
         $items = [];
         foreach ($titles as $i => $title) {

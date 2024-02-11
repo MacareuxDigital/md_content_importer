@@ -116,6 +116,11 @@ class Batches extends DashboardPageController
             $this->error->add(t('Please input document root.'));
         }
 
+        // If $sourcePath is not start with $documentRoot, show error
+        if ($sourcePath && $documentRoot && strpos($sourcePath, $documentRoot) !== 0) {
+            $this->error->add(t('Source path must start with document root.'));
+        }
+
         $pageTypeID = $this->post('pageTypeID');
         if ($pageTypeID) {
             $pageType = Type::getByID($pageTypeID);
@@ -166,7 +171,11 @@ class Batches extends DashboardPageController
             return $this->buildRedirect($this->action('edit_batch', $batch->getId()));
         }
 
-        $this->edit_batch_basic($batchID);
+        if ($batchID) {
+            $this->edit_batch_basic($batchID);
+        } else {
+            $this->add_batch();
+        }
     }
 
     public function delete_batch()
@@ -409,14 +418,10 @@ class Batches extends DashboardPageController
                 $this->set('originalString', $originalString);
                 $this->set('transformer', $transformer);
                 $this->set('batchItem', $batchItem);
-                $this->set('pageTitle', t('Edit Transformer'));
+                $this->set('pageTitle', t('Add "%s" Transformer', $transformer->getTransformerName()));
                 $this->render('/dashboard/system/content_importer/batches/edit_transformer');
             } else {
-                $transformers = [];
-                foreach ($manager->getTransformers() as $transformer) {
-                    $transformers[$transformer->getTransformerHandle()] = $transformer->getTransformerName();
-                }
-                $this->set('transformers', $transformers);
+                $this->set('transformers', $manager->getTransformers());
                 $this->set('pageTitle', t('Add Transformer'));
                 $this->render('/dashboard/system/content_importer/batches/add_transformer');
             }
@@ -436,7 +441,7 @@ class Batches extends DashboardPageController
             $this->set('batchItemTransformer', $batchItemTransformer);
             $this->set('transformer', $batchItemTransformer->getClass());
             $this->set('batchItem', $batchItemTransformer->getBatchItem());
-            $this->set('pageTitle', t('Edit Transformer'));
+            $this->set('pageTitle', t('Edit "%s" Transformer', $batchItemTransformer->getClass()->getTransformerName()));
             $this->render('/dashboard/system/content_importer/batches/edit_transformer');
         } else {
             $this->error->add(t('Invalid Transformer.'));
