@@ -52,6 +52,37 @@ All import results of the files are logged to prevent duplicate uploading to the
 You can see the logs of the recent file imports from the "Dashboard > System & Settings > Content Importer > Batches > File Logs" page.
 Also, you can download the log file as a CSV file.
 
+## Creating a custom transformer / publisher
+
+You can create a custom transformer or publisher to transform the extracted contents or publish the contents by your own way.
+You may want to create a custom transformer to convert the extracted contents by more complex logic or to support attribute types not supported by the package (only image file type is supported by default).
+You may want to create a custom publisher to support block types not supported by the package (only content block type is supported by default).
+
+### Creating a transformer
+
+First, create a class by implementing the `\Macareux\ContentImporter\Transformer\TransformerInterface` interface.
+The interface will be stored in the database as a serialized string, so you may want to implement the `__sleep` and `__wakeup` methods to serialize and unserialize the object properly.
+
+You can use `\Macareux\ContentImporter\Traits\ImageFileTransformerTrait` to create a transformer that downloads files from the extracted contents.
+
+Then, register the transformer to the transformer manager.
+
+```php
+$transformerManager = $this->app->make(\Macareux\ContentImporter\Transformer\TransformerManager::class);
+$transformerManager->registerTransformer(new YourCustomTransformer());
+```
+
+### Creating a publisher
+
+First, create a class by implementing the `\Macareux\ContentImporter\Publisher\Block\BlockPublisherInterface` interface.
+
+Then, register the publisher to the publisher manager.
+
+```php
+$publisherManager = $this->app->make(\Macareux\ContentImporter\Publisher\Block\BlockPublisherManager::class);
+$publisherManager->registerPublisher(new YourCustomPublisher());
+```
+
 ## License
 
 MIT License

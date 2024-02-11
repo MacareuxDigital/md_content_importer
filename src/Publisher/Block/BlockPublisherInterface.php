@@ -7,9 +7,9 @@ use Concrete\Core\Entity\Block\BlockType\BlockType;
 interface BlockPublisherInterface
 {
     /**
-     * @param BlockType $blockType
-     * @param string $content
-     * @param array $data
+     * @param BlockType $blockType The block type to publish. You can use this to check if the block type is the one you want to publish.
+     * @param string $content The extracted content from the source.
+     * @param array $data The data to pass `save()` method of the block type controller.
      *
      * @return array $data
      */
