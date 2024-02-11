@@ -61,7 +61,7 @@ You may want to create a custom publisher to support block types not supported b
 ### Creating a transformer
 
 First, create a class by implementing the `\Macareux\ContentImporter\Transformer\TransformerInterface` interface.
-The interface will be stored in the database as a serialized string, so you may want to implement the `__sleep` and `__wakeup` methods to serialize and unserialize the object properly.
+The class will be stored in the database as a serialized string, so you may want to implement the `__sleep` and `__wakeup` methods to serialize and unserialize the object properly.
 
 You can use `\Macareux\ContentImporter\Traits\ImageFileTransformerTrait` to create a transformer that downloads files from the extracted contents.
 
