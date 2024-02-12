@@ -15,12 +15,12 @@ Provide a name and required information to create a batch, then click on "Add Ba
 #### 2. Set up selectors
 
 After creating a batch, you can set up selectors to extract contents from the source page.
-Composer form items is listed, you can add selectors by clicking on "Set Selector" button.
+Composer form items are listed, you can add selectors by clicking on "Set Selector" button.
 You can use several ways to extract contents from the source page, such as Xpath, CSS selector, or file name, etc.
 Also, you can select the type of the content, such as inner html, inner text, or attribute value.
 For example, if you want to extract the title of the source page, you may use the CSS selector `h1` and select the type `inner text`.
 Or, if you want to get og:image meta tag, you may use the CSS selector `meta[property=og\:image]` and select the type `attribute` and provide the attribute name `content`.
-To test the selectors, you can use the "Preview" button to see the extracted contents.
+You can use the "Preview" button to test the selectors to see the extracted contents.
 
 #### 3. Set up transformers
 
@@ -28,7 +28,7 @@ After setting up selectors, you can set up transformers.
 With transformers, you can transform the extracted contents like:
 
 - Generate a slug from the title
-- Search specific content with regular expression and replace it with another content
+- Search specific content with a regular expression and replace it with another content
 - Import images files from the extracted html content
 - Get topics from the extracted content
 - etc.
@@ -55,7 +55,7 @@ Also, you can download the log file as a CSV file.
 ## Creating a custom transformer / publisher
 
 You can create a custom transformer or publisher to transform the extracted contents or publish the contents by your own way.
-You may want to create a custom transformer to convert the extracted contents by more complex logic or to support attribute types not supported by the package (only image file type is supported by default).
+You may want to create a custom transformer to convert the extracted contents by more complex logic or to support attribute types not supported by the package (by default, image file type is the only supported attribute type that has not text value.).
 You may want to create a custom publisher to support block types not supported by the package (only content block type is supported by default).
 
 ### Creating a transformer
