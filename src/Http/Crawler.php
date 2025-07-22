@@ -4,6 +4,10 @@ namespace Macareux\ContentImporter\Http;
 
 use Concrete\Core\Cache\Level\ExpensiveCache;
 use Concrete\Core\File\Service\File;
+use Concrete\Core\Http\Client\Client as HttpClient;
+use Concrete\Core\Package\PackageService;
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
 use League\Url\Components\Path;
 use Macareux\ContentImporter\Entity\BatchItem;
 use Symfony\Component\CssSelector\Exception\SyntaxErrorException;
@@ -27,14 +31,26 @@ class Crawler
     protected $cache;
 
     /**
+     * @var HttpClient
+     */
+    protected $client;
+
+    /**
+     * @var \Concrete\Core\Package\PackageService
+     */
+    protected $packageService;
+
+    /**
      * @param string $sourcePath
      * @param File $service
      */
-    public function __construct(string $sourcePath, File $service, ExpensiveCache $cache)
+    public function __construct(string $sourcePath, File $service, ExpensiveCache $cache, HttpClient $client, PackageService $packageService)
     {
         $this->sourcePath = $sourcePath;
         $this->service = $service;
         $this->cache = $cache;
+        $this->client = $client;
+        $this->packageService = $packageService;
     }
 
     public function getContent(int $filterType, int $contentType, ?string $selector = null, ?string $attribute = null): string
@@ -193,7 +209,35 @@ class Crawler
             }
         }
 
-        $contents = $this->service->getContents($this->sourcePath);
+        $url = @parse_url($this->sourcePath);
+        if (isset($url['scheme']) && isset($url['host'])) {
+            // Get the contents from a remote URL
+            $requestOptions = [];
+            $package = $this->packageService->getClass('md_content_importer');
+            if ($package) {
+                $config = $package->getFileConfig();
+                $configValue = $config->get('concrete.http.cookie');
+                if ($configValue) {
+                    $cookies = explode(';', $configValue);
+                    $setCookies = [];
+                    foreach ($cookies as $cookie) {
+                        $cookie = trim($cookie);
+                        if ($cookie) {
+                            $setCookie = SetCookie::fromString($cookie);
+                            $setCookie->setDomain($url['host']);
+                            $setCookies[] = $setCookie;
+                        }
+                    }
+                    $jar = new CookieJar(false, $setCookies);
+                    $requestOptions['cookies'] = $jar;
+                }
+            }
+            $response = $this->client->request('GET', $this->sourcePath, $requestOptions);
+            $contents = $response ? $response->getBody()->getContents() : '';
+        } else {
+            // Get the contents from a local file
+            $contents = $this->service->getContents($this->sourcePath);
+        }
 
         if (isset($item) && $item->isMiss()) {
             $item->set($contents);
