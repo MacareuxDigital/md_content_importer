@@ -205,11 +205,13 @@ trait FileImporterTrait
         $app = Application::getFacadeApplication();
 
         // If extension is not allowed, skip
-        /** @var File $fileHelper */
-        $fileHelper = $app->make('helper/file');
-        $needle = strtolower($fileHelper->getExtension($path));
-        if (!in_array($needle, $extensions, true)) {
-            return false;
+        if (count($extensions) > 0) {
+            /** @var File $fileHelper */
+            $fileHelper = $app->make('helper/file');
+            $needle = strtolower($fileHelper->getExtension($path));
+            if (!in_array($needle, $extensions, true)) {
+                return false;
+            }
         }
 
         return true;
