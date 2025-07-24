@@ -10,9 +10,13 @@ use Concrete\Core\File\Import\ImportException;
 use Concrete\Core\File\Import\ImportOptions;
 use Concrete\Core\File\Service\File;
 use Concrete\Core\File\Service\VolatileDirectory;
+use Concrete\Core\Http\Client\Client;
+use Concrete\Core\Package\PackageService;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Tree\Node\Type\FileFolder;
 use Doctrine\ORM\EntityManagerInterface;
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
 use Macareux\ContentImporter\Entity\ImportFileLog;
 use Macareux\ContentImporter\Repository\ImportFileLogRepository;
 
@@ -123,11 +127,14 @@ trait FileImporterTrait
      */
     public function importFile($file): Version
     {
-        if ($this->getDocumentRoot()) {
-            $host = parse_url($file, PHP_URL_HOST);
-            if (!$host) {
-                $file = $this->getDocumentRoot() . $file;
-            }
+        $isRemoteFile = false;
+        $host = parse_url($file, PHP_URL_HOST);
+        if ($host) {
+            $isRemoteFile = true;
+        }
+
+        if ($this->getDocumentRoot() && !$isRemoteFile) {
+            $file = $this->getDocumentRoot() . $file;
         }
 
         $app = Application::getFacadeApplication();
@@ -143,13 +150,13 @@ trait FileImporterTrait
             }
         }
 
-        /** @var File $fileHelper */
-        $fileHelper = $app->make('helper/file');
-        $fileContent = $fileHelper->getContents($file);
+        $fileContent = $this->getFileContent($file, $host);
         if (!$fileContent) {
             throw ImportException::fromErrorCode(ImportException::E_FILE_INVALID);
         }
 
+        /** @var File $fileHelper */
+        $fileHelper = $app->make('helper/file');
         $filename = $fileHelper->splitFilename($file);
         /** @var VolatileDirectory $volatileDirectory */
         $volatileDirectory = $app->make(VolatileDirectory::class);
@@ -237,5 +244,43 @@ trait FileImporterTrait
         }
 
         return $folders;
+    }
+
+    private function getFileContent($file, $host): bool|string
+    {
+        $app = Application::getFacadeApplication();
+        if ($host) {
+            // Get the contents from a remote URL
+            $requestOptions = [];
+            /** @var PackageService $packageService */
+            $packageService = $app->make(PackageService::class);
+            $package = $packageService->getClass('md_content_importer');
+            if ($package) {
+                $config = $package->getFileConfig();
+                $configValue = $config->get('concrete.http.cookie');
+                if ($configValue) {
+                    $cookies = explode(';', $configValue);
+                    $setCookies = [];
+                    foreach ($cookies as $cookie) {
+                        $cookie = trim($cookie);
+                        if ($cookie) {
+                            $setCookie = SetCookie::fromString($cookie);
+                            $setCookie->setDomain($host);
+                            $setCookies[] = $setCookie;
+                        }
+                    }
+                    $jar = new CookieJar(false, $setCookies);
+                    $requestOptions['cookies'] = $jar;
+                }
+            }
+            /** @var Client $client */
+            $client = $app->make(Client::class);
+            $response = $client->request('GET', $file, $requestOptions);
+            return $response ? $response->getBody()->getContents() : false;
+        } else {
+            /** @var File $fileHelper */
+            $fileHelper = $app->make('helper/file');
+            return $fileHelper->getContents($file);
+        }
     }
 }
