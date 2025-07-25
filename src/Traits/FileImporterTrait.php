@@ -248,7 +248,7 @@ trait FileImporterTrait
         return $folders;
     }
 
-    private function getFileContent($file, $host): bool|string
+    private function getFileContent($file, $host)
     {
         $app = Application::getFacadeApplication();
         if ($host) {
