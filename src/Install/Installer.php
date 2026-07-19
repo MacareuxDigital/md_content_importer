@@ -33,6 +33,7 @@ final class Installer
             '/dashboard/system/content_importer/batches' => 'Batches',
             '/dashboard/system/content_importer/batches/logs' => 'Batch Logs',
             '/dashboard/system/content_importer/batches/file_logs' => 'File Logs',
+            '/dashboard/system/content_importer/urls' => 'URLs',
             '/dashboard/system/content_importer/list_importer' => 'List Importer',
             '/dashboard/system/content_importer/config' => 'Config',
         ];

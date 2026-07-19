@@ -23,6 +23,7 @@ use Macareux\ContentImporter\Http\Crawler;
 use Macareux\ContentImporter\Http\PreviewResponse;
 use Macareux\ContentImporter\Repository\ImportBatchLogRepository;
 use Macareux\ContentImporter\Search\BatchList;
+use Macareux\ContentImporter\Service\UrlBatchAssigner;
 use Macareux\ContentImporter\Traits\EntityTrait;
 use Macareux\ContentImporter\Traits\PermissionCheckerTrait;
 use Macareux\ContentImporter\Transformer\TransformerManager;
@@ -161,6 +162,10 @@ class Batches extends DashboardPageController
 
             $this->entityManager->persist($batch);
             $this->entityManager->flush();
+
+            /** @var UrlBatchAssigner $assigner */
+            $assigner = $this->app->make(UrlBatchAssigner::class);
+            $assigner->syncFromBatchSourcePath($batch);
 
             $this->flash('success', t('Batch saved successfully.'));
 

@@ -137,6 +137,8 @@ trait FileImporterTrait
             $file = $this->getDocumentRoot() . $file;
         }
 
+        $file = $this->normalizeDotSegments($file);
+
         $app = Application::getFacadeApplication();
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $app->make(EntityManagerInterface::class);
@@ -222,6 +224,74 @@ trait FileImporterTrait
         }
 
         return true;
+    }
+
+    /**
+     * Resolve `.` and `..` segments in the path part of a URL or file path,
+     * e.g. https://example.com/hosp/about/../assets/file.pdf
+     * becomes https://example.com/hosp/assets/file.pdf.
+     *
+     * @param string $file URL or file path
+     *
+     * @return string
+     */
+    private function normalizeDotSegments(string $file): string
+    {
+        if (strpos($file, './') === false) {
+            return $file;
+        }
+
+        $parts = parse_url($file);
+        if ($parts === false || !isset($parts['path'])) {
+            return $file;
+        }
+
+        $path = $parts['path'];
+        $isAbsolute = strpos($path, '/') === 0;
+        $segments = [];
+        foreach (explode('/', $path) as $segment) {
+            if ($segment === '' || $segment === '.') {
+                continue;
+            }
+            if ($segment === '..') {
+                if (!empty($segments) && end($segments) !== '..') {
+                    array_pop($segments);
+                } elseif (!$isAbsolute) {
+                    // Keep leading `..` segments of relative paths, since they can't be resolved
+                    $segments[] = '..';
+                }
+            } else {
+                $segments[] = $segment;
+            }
+        }
+        $normalizedPath = ($isAbsolute ? '/' : '') . implode('/', $segments);
+
+        $result = '';
+        if (isset($parts['scheme'])) {
+            $result .= $parts['scheme'] . '://';
+        }
+        if (isset($parts['host'])) {
+            if (isset($parts['user'])) {
+                $result .= $parts['user'];
+                if (isset($parts['pass'])) {
+                    $result .= ':' . $parts['pass'];
+                }
+                $result .= '@';
+            }
+            $result .= $parts['host'];
+            if (isset($parts['port'])) {
+                $result .= ':' . $parts['port'];
+            }
+        }
+        $result .= $normalizedPath;
+        if (isset($parts['query'])) {
+            $result .= '?' . $parts['query'];
+        }
+        if (isset($parts['fragment'])) {
+            $result .= '#' . $parts['fragment'];
+        }
+
+        return $result;
     }
 
     private function getFolders(): array
