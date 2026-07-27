@@ -66,15 +66,23 @@ class Urls extends DashboardPageController
             $list->filterByStatus($status);
         }
 
-        $batchId = (int) $this->request->query->get('batch_id', 0);
-        if ($batchId > 0) {
-            $list->filterByBatchId($batchId);
+        $batchFilter = (string) $this->request->query->get('batch_id', '');
+        if ($batchFilter === 'unassigned') {
+            $list->filterByUnassigned();
+        } elseif ($batchFilter === 'manual') {
+            $list->filterByManual();
+        } elseif ($batchFilter !== '' && ctype_digit($batchFilter) && (int) $batchFilter > 0) {
+            $list->filterByBatchId((int) $batchFilter);
         }
 
         $factory = new PaginationFactory(Request::getInstance());
         $pagination = $factory->createPaginationObject($list, PaginationFactory::PERMISSIONED_PAGINATION_STYLE_PAGER);
 
-        $batchOptions = ['' => t('** All Batches')];
+        $batchOptions = [
+            '' => t('** All Batches'),
+            'unassigned' => t('Unassigned'),
+            'manual' => t('Manual'),
+        ];
         $assignBatchOptions = ['' => t('** Select Batch')];
         foreach ($this->getAll(Batch::class) as $batch) {
             /** @var Batch $batch */
@@ -86,7 +94,7 @@ class Urls extends DashboardPageController
         $this->set('pagination', $pagination);
         $this->set('keywords', $keywords);
         $this->set('status', $status);
-        $this->set('batchId', $batchId);
+        $this->set('batchId', $batchFilter);
         $this->set('sort', $sort);
         $this->set('direction', $direction);
         $this->set('statusOptions', ['' => t('** All Statuses')] + ImportUrl::getStatusOptions());

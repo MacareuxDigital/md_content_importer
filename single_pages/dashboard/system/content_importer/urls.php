@@ -10,7 +10,7 @@ use Macareux\ContentImporter\Entity\ImportUrl;
 /** @var \Concrete\Core\Search\Pagination\Pagination $pagination */
 /** @var string $keywords */
 /** @var string $status */
-/** @var int $batchId */
+/** @var string $batchId */
 /** @var string $sort */
 /** @var string $direction */
 /** @var array $statusOptions */

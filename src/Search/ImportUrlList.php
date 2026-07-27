@@ -74,6 +74,18 @@ class ImportUrlList extends EntityItemList implements PaginationProviderInterfac
             ->setParameter('batchId', $batchId);
     }
 
+    public function filterByUnassigned(): void
+    {
+        $this->query->andWhere('u.batch IS NULL')
+            ->andWhere($this->notManuallyImportedExpression());
+    }
+
+    public function filterByManual(): void
+    {
+        $this->query->andWhere('u.batch IS NULL')
+            ->andWhere($this->manuallyImportedExpression());
+    }
+
     public function filterByStatus(string $status): void
     {
         switch ($status) {
@@ -86,8 +98,23 @@ class ImportUrlList extends EntityItemList implements PaginationProviderInterfac
                 break;
             case ImportUrl::STATUS_NOT_YET:
                 $this->query->andWhere('u.batch IS NULL')
-                    ->andWhere('u.importedCID IS NULL');
+                    ->andWhere('u.importedCID IS NULL')
+                    ->andWhere($this->notManuallyImportedExpression());
                 break;
         }
+    }
+
+    private function manuallyImportedExpression(): string
+    {
+        $this->query->setParameter('manualImportFlag', '%"manual_import":true%');
+
+        return 'u.metadata LIKE :manualImportFlag';
+    }
+
+    private function notManuallyImportedExpression(): string
+    {
+        $this->query->setParameter('manualImportFlag', '%"manual_import":true%');
+
+        return '(u.metadata IS NULL OR u.metadata NOT LIKE :manualImportFlag)';
     }
 }
