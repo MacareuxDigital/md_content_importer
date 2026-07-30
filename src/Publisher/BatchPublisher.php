@@ -22,6 +22,7 @@ use Macareux\ContentImporter\Entity\BatchItem;
 use Macareux\ContentImporter\Entity\ImportBatchLog;
 use Macareux\ContentImporter\Http\Crawler;
 use Macareux\ContentImporter\Publisher\Block\BlockPublisherManager;
+use Macareux\ContentImporter\Service\ImportUrlStatusSync;
 use Psr\Log\LoggerInterface;
 
 class BatchPublisher implements ApplicationAwareInterface
@@ -132,6 +133,10 @@ class BatchPublisher implements ApplicationAwareInterface
             $log->setImportDate(CarbonImmutable::now());
             $this->entityManager->persist($log);
             $this->entityManager->flush();
+
+            /** @var ImportUrlStatusSync $statusSync */
+            $statusSync = $this->app->make(ImportUrlStatusSync::class);
+            $statusSync->markImportedFromLog($log);
         } else {
             $this->error->add(t('Failed to start importing.'));
         }
